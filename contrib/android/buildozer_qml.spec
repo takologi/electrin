@@ -171,7 +171,7 @@ android.add_src = electrum/gui/qml/java_classes/
 
 # kotlin-stdlib is required for zxing-cpp (BarcodeScannerView)
 android.gradle_dependencies =
-    com.android.support:support-compat:28.0.0,
+    androidx.core:core:1.16.0,
     org.jetbrains.kotlin:kotlin-stdlib:1.8.22
 
 android.add_activities = org.electrin.qr.SimpleScannerActivity, org.electrin.biometry.BiometricActivity
