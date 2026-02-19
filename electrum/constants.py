@@ -265,28 +265,103 @@ class BitcoinMutinynet(BitcoinTestnet):
 
 
 # ---------------------------------------------------------------------------
-# TODO(rincoin-phase1): Add RincoinMainnet, RincoinTestnet, RincoinRegtest
-# classes here following the pattern of BitcoinMainnet / BitcoinTestnet above.
-#
-# Required fields per class (from Rincoin Core src/chainparams.cpp):
-#   NET_NAME        = "rincoin"          # unique; drives datadir and CLI flag
-#   WIF_PREFIX      = 0xbc               # 188 decimal  (mainnet)
-#   ADDRTYPE_P2PKH  = 60                 # produces "R..." addresses
-#   ADDRTYPE_P2SH   = 122                # produces "r..." addresses
-#   SEGWIT_HRP      = "rin"
-#   GENESIS         = "<mainnet genesis hash from Fulcrum>"  # TODO: fill in
-#   DEFAULT_PORTS   = {'t': '50001', 's': '50002'}
-#   BIP44_COIN_TYPE = <PENDING>          # TODO(rincoin-bip44): replace with
-#                                        # SLIP-0044 registered value before
-#                                        # public release.  Temporary dev
-#                                        # placeholder: use 9555 (Rincoin p2p
-#                                        # port) as a recognisable sentinel so
-#                                        # it is obvious in any wallet dump
-#                                        # that this is still unregistered.
-#   XPRV_HEADERS / XPUB_HEADERS: Rincoin Core reuses standard BTC xpub/xprv
-#   bytes (0x0488b21e / 0x0488ade4).  We keep them identical here so that
-#   hardware wallets that do not know about RIN can still derive keys; the
-#   coin type in the derivation path is the only distinguishing factor.
+# Rincoin network classes
+# Source of truth: /home/tomas_admin/rincoin/src/chainparams.cpp
+# Genesis hash confirmed from Fulcrum server.features (2025-07-17).
+# ---------------------------------------------------------------------------
+
+class RincoinMainnet(AbstractNet):
+    """Rincoin mainnet – P2PKH "R...", bech32 "rin1...", native p2p port 9555."""
+
+    NET_NAME = "rincoin"
+    TESTNET = False
+    WIF_PREFIX = 0xbc               # 188 – mainnet WIF prefix
+    ADDRTYPE_P2PKH = 60             # produces "R..." legacy addresses
+    ADDRTYPE_P2SH = 122             # produces "r..." P2SH addresses
+    SEGWIT_HRP = "rin"
+    BOLT11_HRP = SEGWIT_HRP
+    GENESIS = "000096bdd6e4613ca89b074ebd6f609aba6fe3f868b34ee79380aa3bc7a8c9db"
+    DEFAULT_PORTS = {'t': '50001', 's': '50002'}
+    BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS = 0  # No LN on Rincoin
+
+    # Rincoin Core reuses standard BTC xpub/xprv serialisation bytes so that
+    # hardware wallets derive keys correctly.  The coin type in the BIP-44
+    # derivation path (m/44'/COIN_TYPE'/…) is the only distinguishing factor.
+    XPRV_HEADERS = {
+        'standard':    0x0488ade4,  # xprv
+        'p2wpkh-p2sh': 0x049d7878,  # yprv
+        'p2wsh-p2sh':  0x0295b005,  # Yprv
+        'p2wpkh':      0x04b2430c,  # zprv
+        'p2wsh':       0x02aa7a99,  # Zprv
+    }
+    XPRV_HEADERS_INV = inv_dict(XPRV_HEADERS)
+    XPUB_HEADERS = {
+        'standard':    0x0488b21e,  # xpub
+        'p2wpkh-p2sh': 0x049d7cb2,  # ypub
+        'p2wsh-p2sh':  0x0295b43f,  # Ypub
+        'p2wpkh':      0x04b24746,  # zpub
+        'p2wsh':       0x02aa7ed3,  # Zpub
+    }
+    XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
+
+    # TODO(rincoin-bip44): Replace 9555 with the SLIP-0044 registered coin
+    # type once the PR at https://github.com/satoshilabs/slips is merged.
+    # 9555 is the Rincoin p2p port – a recognisable sentinel that makes
+    # unregistered derivation paths obvious in any wallet dump.
+    # MUST be updated before any public release to avoid derivation-path
+    # collisions with other coins.
+    BIP44_COIN_TYPE = 9555          # PENDING SLIP-0044 registration
+
+    LN_REALM_BYTE = 0
+    LN_DNS_SEEDS = []
+
+
+class RincoinTestnet(AbstractNet):
+    """Rincoin testnet – P2PKH "T...", bech32 "trin1...", native p2p port 19555."""
+
+    NET_NAME = "rincoin-testnet"
+    TESTNET = True
+    WIF_PREFIX = 0xd1               # 209 – testnet WIF prefix
+    ADDRTYPE_P2PKH = 65             # produces "T..." legacy addresses
+    ADDRTYPE_P2SH = 127             # produces "t..." P2SH addresses
+    SEGWIT_HRP = "trin"
+    BOLT11_HRP = SEGWIT_HRP
+    GENESIS = "00009d5fbc8579e8b4292f1bab22437d9468c0cc615cb5b0242d8159b31760ad"
+    DEFAULT_PORTS = {'t': '60001', 's': '60002'}
+
+    XPRV_HEADERS = {
+        'standard':    0x04358394,  # tprv
+        'p2wpkh-p2sh': 0x044a4e28,  # uprv
+        'p2wsh-p2sh':  0x024285b5,  # Uprv
+        'p2wpkh':      0x045f18bc,  # vprv
+        'p2wsh':       0x02575048,  # Vprv
+    }
+    XPRV_HEADERS_INV = inv_dict(XPRV_HEADERS)
+    XPUB_HEADERS = {
+        'standard':    0x043587cf,  # tpub
+        'p2wpkh-p2sh': 0x044a5262,  # upub
+        'p2wsh-p2sh':  0x024289ef,  # Upub
+        'p2wpkh':      0x045f1cf6,  # vpub
+        'p2wsh':       0x02575483,  # Vpub
+    }
+    XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
+    BIP44_COIN_TYPE = 1             # shared testnet coin type (BIP-44 convention)
+    LN_REALM_BYTE = 1
+    LN_DNS_SEEDS = []
+
+
+class RincoinRegtest(RincoinTestnet):
+    """Rincoin regtest – bech32 "rrin1...", native p2p port 29555."""
+
+    NET_NAME = "rincoin-regtest"
+    ADDRTYPE_P2PKH = 111            # same as BTC testnet / regtest
+    ADDRTYPE_P2SH = 196
+    SEGWIT_HRP = "rrin"
+    BOLT11_HRP = SEGWIT_HRP
+    GENESIS = "7d2c8c57ce2597f86c9fe41f9865ad664b04d2aad4321fdaab48ed3da1805fe7"
+    DEFAULT_PORTS = {'t': '61001', 's': '61002'}
+    LN_DNS_SEEDS = []
+
 # ---------------------------------------------------------------------------
 NETS_LIST = tuple(all_subclasses(AbstractNet))  # type: Sequence[Type[AbstractNet]]
 NETS_LIST = tuple(sorted(NETS_LIST, key=lambda x: x.NET_NAME))
