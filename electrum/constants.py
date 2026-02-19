@@ -71,6 +71,12 @@ class AbstractNet:
     BOLT11_HRP: str
     GENESIS: str
     BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS: int = 0
+    # TODO(rincoin-bip44): Each subclass must set BIP44_COIN_TYPE to its
+    # SLIP-0044 registered coin type.  For Rincoin the final value is PENDING
+    # registration at https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+    # Use the placeholder value defined in RincoinMainnet until registration is
+    # confirmed.  MUST be replaced with the registered number before any public
+    # release to avoid derivation-path collisions with other coins.
     BIP44_COIN_TYPE: int
     LN_REALM_BYTE: int
     DEFAULT_PORTS: Mapping[str, str]
@@ -258,6 +264,30 @@ class BitcoinMutinynet(BitcoinTestnet):
     LN_DNS_SEEDS = []
 
 
+# ---------------------------------------------------------------------------
+# TODO(rincoin-phase1): Add RincoinMainnet, RincoinTestnet, RincoinRegtest
+# classes here following the pattern of BitcoinMainnet / BitcoinTestnet above.
+#
+# Required fields per class (from Rincoin Core src/chainparams.cpp):
+#   NET_NAME        = "rincoin"          # unique; drives datadir and CLI flag
+#   WIF_PREFIX      = 0xbc               # 188 decimal  (mainnet)
+#   ADDRTYPE_P2PKH  = 60                 # produces "R..." addresses
+#   ADDRTYPE_P2SH   = 122                # produces "r..." addresses
+#   SEGWIT_HRP      = "rin"
+#   GENESIS         = "<mainnet genesis hash from Fulcrum>"  # TODO: fill in
+#   DEFAULT_PORTS   = {'t': '50001', 's': '50002'}
+#   BIP44_COIN_TYPE = <PENDING>          # TODO(rincoin-bip44): replace with
+#                                        # SLIP-0044 registered value before
+#                                        # public release.  Temporary dev
+#                                        # placeholder: use 9555 (Rincoin p2p
+#                                        # port) as a recognisable sentinel so
+#                                        # it is obvious in any wallet dump
+#                                        # that this is still unregistered.
+#   XPRV_HEADERS / XPUB_HEADERS: Rincoin Core reuses standard BTC xpub/xprv
+#   bytes (0x0488b21e / 0x0488ade4).  We keep them identical here so that
+#   hardware wallets that do not know about RIN can still derive keys; the
+#   coin type in the derivation path is the only distinguishing factor.
+# ---------------------------------------------------------------------------
 NETS_LIST = tuple(all_subclasses(AbstractNet))  # type: Sequence[Type[AbstractNet]]
 NETS_LIST = tuple(sorted(NETS_LIST, key=lambda x: x.NET_NAME))
 
