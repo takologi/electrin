@@ -731,6 +731,9 @@ class Network(Logger, NetworkRetryManager[ServerAddr]):
                 self.default_server = ServerAddr.from_str("localhost:1:s")
             else:
                 self.default_server = pick_random_server(allowed_protocols=self._allowed_protocols)
+                # fall back to TCP if no SSL server is listed (e.g. local dev with TCP-only Fulcrum)
+                if self.default_server is None and 't' not in self._allowed_protocols:
+                    self.default_server = pick_random_server(allowed_protocols={'t'})
         assert isinstance(self.default_server, ServerAddr), f"invalid type for default_server: {self.default_server!r}"
 
     def _set_proxy(self, proxy: ProxySettings):
