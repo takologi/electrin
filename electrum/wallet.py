@@ -45,7 +45,7 @@ from dataclasses import dataclass
 import electrum_ecc as ecc
 from aiorpcx import ignore_after, run_in_thread
 
-from . import util, keystore, transaction, bitcoin, coinchooser, bip32, descriptor
+from . import util, keystore, transaction, bitcoin, coinchooser, bip32, descriptor, constants
 from .i18n import _
 from .bip32 import BIP32Node, convert_bip32_intpath_to_strpath, convert_bip32_strpath_to_intpath
 from .logging import get_logger, Logger
