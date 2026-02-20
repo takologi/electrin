@@ -1021,6 +1021,17 @@ signet_block_explorers = {
                        {'tx': 'tx/', 'addr': 'address/'}),
 }
 
+rincoin_block_explorers = {
+    'Community Explorer (rinscan.net)': ('https://rinscan.net/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
+    'Official Explorer (rincoin.org)': ('https://explorer.rincoin.org/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
+    'Original Legacy Explorer (rin.so)': ('https://explorer.rin.so/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
+    'Community Legacy Explorer (old.rinscan.net)': ('https://old.rinscan.net/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
+}
+
 _block_explorer_default_api_loc = {'tx': 'tx/', 'addr': 'address/'}
 
 
@@ -1032,6 +1043,8 @@ def block_explorer_info():
         return testnet4_block_explorers
     elif constants.net.NET_NAME == "signet":
         return signet_block_explorers
+    elif constants.net.NET_NAME.startswith("rincoin"):
+        return rincoin_block_explorers
     return mainnet_block_explorers
 
 
