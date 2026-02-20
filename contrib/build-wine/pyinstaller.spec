@@ -23,6 +23,8 @@ if not cmdline_name:
 hiddenimports = []
 hiddenimports += collect_submodules('pkg_resources')  # workaround for https://github.com/pypa/setuptools/issues/1963
 hiddenimports += collect_submodules(f"{PYPKG}.plugins")
+# RinHash dependencies: blake3 (Rust extension) and argon2 (C extension via cffi)
+hiddenimports += ['blake3', 'argon2', 'argon2.low_level', 'argon2._utils', '_argon2_cffi_bindings']
 
 
 binaries = []
