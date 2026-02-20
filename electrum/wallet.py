@@ -514,6 +514,8 @@ class Abstract_Wallet(ABC, Logger, EventListener):
         return new_path
 
     def has_lightning(self) -> bool:
+        if not constants.net.HAS_LIGHTNING:
+            return False
         return bool(self.lnworker)
 
     def has_channels(self):
@@ -3968,7 +3970,13 @@ class Deterministic_Wallet(Abstract_Wallet):
         # lightning_privkey2 is not deterministic (legacy wallets, bip39)
         ln_xprv = self.db.get('lightning_xprv') or self.db.get('lightning_privkey2')
         # lnworker can only be initialized once receiving addresses are available
-        # therefore we instantiate lnworker in DeterministicWallet
+        # therefore we instantiate lnworker in DeterministicWallet.
+        # Also skip initialisation entirely when the active network has
+        # HAS_LIGHTNING = False (e.g. Rincoin) — even if an old wallet db
+        # contains a lightning_xprv key.
+        if not constants.net.HAS_LIGHTNING:
+            self.lnworker = None
+            return
         self.lnworker = LNWallet(self, ln_xprv) if ln_xprv else None
 
     def has_seed(self):
