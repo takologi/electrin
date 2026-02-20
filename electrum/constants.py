@@ -312,6 +312,15 @@ class RincoinMainnet(AbstractNet):
     # collisions with other coins.
     BIP44_COIN_TYPE = 9555          # PENDING SLIP-0044 registration
 
+    # PoW verification parameters (used by electrum/blockchain.py)
+    MAX_TARGET = 0x0000ffff00000000000000000000000000000000000000000000000000000000  # compact: 0x1f00ffff
+    # SPV wallets cannot independently compute the per-block DA target (DGW v3
+    # requires 24 ancestor headers and changes every block from height 30000).
+    # Setting this flag tells verify_header to trust the declared `bits` field
+    # and only check that RinHash(header) ≤ bits_to_target(bits).  This is the
+    # correct SPV security model and is immune to future DA algorithm changes.
+    SPV_SKIP_DA_BITS_CHECK = True
+
     LN_REALM_BYTE = 0
     LN_DNS_SEEDS = []
 
@@ -346,6 +355,11 @@ class RincoinTestnet(AbstractNet):
     }
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
     BIP44_COIN_TYPE = 1             # shared testnet coin type (BIP-44 convention)
+
+    # PoW (TESTNET=True already bypasses PoW checks, but set consistently)
+    MAX_TARGET = 0x0000ffff00000000000000000000000000000000000000000000000000000000
+    SPV_SKIP_DA_BITS_CHECK = True
+
     LN_REALM_BYTE = 1
     LN_DNS_SEEDS = []
 

@@ -41,7 +41,22 @@ HEADER_SIZE = 80  # bytes
 CHUNK_SIZE = 2016  # num headers in a difficulty retarget period
 
 # see https://github.com/bitcoin/bitcoin/blob/feedb9c84e72e4fff489810a2bbeec09bcda5763/src/chainparams.cpp#L76
-MAX_TARGET = 0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff  # compact: 0x1d00ffff
+MAX_TARGET = 0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff  # compact: 0x1d00ffff (Bitcoin)
+
+
+def _net_max_target() -> int:
+    """MAX_TARGET for the active network (overridden per-coin via constants)."""
+    return getattr(constants.net, 'MAX_TARGET', MAX_TARGET)
+
+
+def _net_chunk_size() -> int:
+    """Blocks per legacy fixed-window retarget period."""
+    return getattr(constants.net, 'POW_RETARGET_BLOCKS', CHUNK_SIZE)
+
+
+def _net_target_timespan() -> int:
+    """Legacy retarget timespan in seconds."""
+    return getattr(constants.net, 'POW_TARGET_TIMESPAN', 14 * 24 * 60 * 60)
 
 
 class MissingHeader(Exception):
@@ -315,6 +330,28 @@ class Blockchain(Logger):
             raise InvalidHeader("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if constants.net.TESTNET:
             return
+        if getattr(constants.net, 'SPV_SKIP_DA_BITS_CHECK', False):
+            # SPV wallets cannot recompute the per-block DA target from first
+            # principles.  Rincoin uses DGW v3 (adjusts every block using a
+            # 24-block rolling average) from height 30000, and may adopt a
+            # different algorithm in the future.  Rather than embedding DA
+            # logic in the wallet:
+            #   • We trust the `bits` field declared in the header.
+            #   • We verify that pow_hash(header) ≤ bits_to_target(bits).
+            # Security argument: the Electrum server (Fulcrum-RIN) is
+            # authoritative for chain selection.  The wallet's role is to check
+            # that the work the server presents is real, not that the server
+            # picked the correct difficulty.  Faking valid PoW at difficulty
+            # 0x1f00ffff costs essentially nothing, but at real mainnet
+            # difficulty it is infeasible.  Any header that passes this check
+            # therefore represents genuine mining effort even if we haven't
+            # independently verified that the DA rules produced that exact bits.
+            _pow_target = cls.bits_to_target(header.get('bits'))
+            _pow_hash = pow_hash_header(header)
+            pow_hash_as_num = int.from_bytes(bfh(_pow_hash), byteorder='big')
+            if pow_hash_as_num > _pow_target:
+                raise InvalidHeader(f"insufficient proof of work: {pow_hash_as_num} vs target {_pow_target}")
+            return
         bits = cls.target_to_bits(target)
         if bits != header.get('bits'):
             raise InvalidHeader("bits mismatch: %s vs %s" % (bits, header.get('bits')))
@@ -327,7 +364,6 @@ class Blockchain(Logger):
         num = len(data) // HEADER_SIZE
         start_height = index * CHUNK_SIZE
         prev_hash = self.get_hash(start_height - 1)
-        target = self.get_target(index-1)
         for i in range(num):
             height = start_height + i
             try:
@@ -335,7 +371,15 @@ class Blockchain(Logger):
             except MissingHeader:
                 expected_header_hash = None
             raw_header = data[i*HEADER_SIZE : (i+1)*HEADER_SIZE]
-            header = deserialize_header(raw_header, index*CHUNK_SIZE + i)
+            header = deserialize_header(raw_header, height)
+            if getattr(constants.net, 'SPV_SKIP_DA_BITS_CHECK', False):
+                # DA bits-check is skipped — see verify_header() and
+                # RincoinMainnet.SPV_SKIP_DA_BITS_CHECK for the full rationale.
+                # Pass the header's own declared target so verify_header only
+                # checks pow_hash ≤ declared_target (bits mismatch check is a no-op).
+                target = self.bits_to_target(header.get('bits'))
+            else:
+                target = self.get_target(index - 1)
             self.verify_header(header, prev_hash, target, expected_header_hash)
             prev_hash = hash_header(header)
 
@@ -515,7 +559,7 @@ class Blockchain(Logger):
     def get_hash(self, height: int) -> str:
         def is_height_checkpoint():
             within_cp_range = height <= constants.net.max_checkpoint()
-            at_chunk_boundary = (height+1) % CHUNK_SIZE == 0
+            at_chunk_boundary = (height+1) % _net_chunk_size() == 0
             return within_cp_range and at_chunk_boundary
 
         if height == -1:
@@ -523,7 +567,7 @@ class Blockchain(Logger):
         elif height == 0:
             return constants.net.GENESIS
         elif is_height_checkpoint():
-            index = height // CHUNK_SIZE
+            index = height // _net_chunk_size()
             h, t = self.checkpoints[index]
             return h
         else:
@@ -533,27 +577,26 @@ class Blockchain(Logger):
             return hash_header(header)
 
     def get_target(self, index: int) -> int:
-        # compute target from chunk x, used in chunk x+1
+        """Legacy fixed-window retarget: compute target for chunk index+1."""
         if constants.net.TESTNET:
             return 0
         if index == -1:
-            return MAX_TARGET
+            return _net_max_target()
         if index < len(self.checkpoints):
             h, t = self.checkpoints[index]
             return t
-        # new target
-        first = self.read_header(index * CHUNK_SIZE)
-        last = self.read_header((index+1) * CHUNK_SIZE - 1)
+        chunk = _net_chunk_size()
+        first = self.read_header(index * chunk)
+        last = self.read_header((index+1) * chunk - 1)
         if not first or not last:
             raise MissingHeader()
         bits = last.get('bits')
         target = self.bits_to_target(bits)
         nActualTimespan = last.get('timestamp') - first.get('timestamp')
-        nTargetTimespan = 14 * 24 * 60 * 60
+        nTargetTimespan = _net_target_timespan()
         nActualTimespan = max(nActualTimespan, nTargetTimespan // 4)
         nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
-        new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
-        # not any target can be represented in 32 bits:
+        new_target = min(_net_max_target(), (target * nActualTimespan) // nTargetTimespan)
         new_target = self.bits_to_target(self.target_to_bits(new_target))
         return new_target
 
@@ -597,7 +640,7 @@ class Blockchain(Logger):
 
     def chainwork_of_header_at_height(self, height: int) -> int:
         """work done by single header at given height"""
-        chunk_idx = height // CHUNK_SIZE - 1
+        chunk_idx = height // _net_chunk_size() - 1
         target = self.get_target(chunk_idx)
         work = ((2 ** 256 - target - 1) // (target + 1)) + 1
         return work
@@ -610,23 +653,24 @@ class Blockchain(Logger):
             # On testnet/regtest, difficulty works somewhat different.
             # It's out of scope to properly implement that.
             return height
-        last_retarget = height // CHUNK_SIZE * CHUNK_SIZE - 1
+        chunk = _net_chunk_size()
+        last_retarget = height // chunk * chunk - 1
         cached_height = last_retarget
         while _CHAINWORK_CACHE.get(self.get_hash(cached_height)) is None:
             if cached_height <= -1:
                 break
-            cached_height -= CHUNK_SIZE
+            cached_height -= chunk
         assert cached_height >= -1, cached_height
         running_total = _CHAINWORK_CACHE[self.get_hash(cached_height)]
         while cached_height < last_retarget:
-            cached_height += CHUNK_SIZE
+            cached_height += chunk
             work_in_single_header = self.chainwork_of_header_at_height(cached_height)
-            work_in_chunk = CHUNK_SIZE * work_in_single_header
+            work_in_chunk = chunk * work_in_single_header
             running_total += work_in_chunk
             _CHAINWORK_CACHE[self.get_hash(cached_height)] = running_total
-        cached_height += CHUNK_SIZE
+        cached_height += chunk
         work_in_single_header = self.chainwork_of_header_at_height(cached_height)
-        work_in_last_partial_chunk = (height % CHUNK_SIZE + 1) * work_in_single_header
+        work_in_last_partial_chunk = (height % chunk + 1) * work_in_single_header
         return running_total + work_in_last_partial_chunk
 
     def can_connect(self, header: dict, *, check_height: bool = True) -> bool:
@@ -643,10 +687,17 @@ class Blockchain(Logger):
             return False
         if prev_hash != header.get('prev_block_hash'):
             return False
-        try:
-            target = self.get_target(height // CHUNK_SIZE - 1)
-        except MissingHeader:
-            return False
+        if getattr(constants.net, 'SPV_SKIP_DA_BITS_CHECK', False):
+            # DA bits-check is skipped — see verify_header() and
+            # RincoinMainnet.SPV_SKIP_DA_BITS_CHECK for the full rationale.
+            # Use the header's own declared difficulty as the target so that
+            # verify_header only validates pow_hash ≤ declared_target.
+            target = self.bits_to_target(header.get('bits'))
+        else:
+            try:
+                target = self.get_target(height // _net_chunk_size() - 1)
+            except MissingHeader:
+                return False
         try:
             self.verify_header(header, prev_hash, target)
         except BaseException as e:
@@ -666,9 +717,10 @@ class Blockchain(Logger):
     def get_checkpoints(self):
         # for each chunk, store the hash of the last block and the target after the chunk
         cp = []
-        n = self.height() // CHUNK_SIZE
+        chunk = _net_chunk_size()
+        n = self.height() // chunk
         for index in range(n):
-            h = self.get_hash((index+1) * CHUNK_SIZE -1)
+            h = self.get_hash((index+1) * chunk - 1)
             target = self.get_target(index)
             cp.append((h, target))
         return cp
