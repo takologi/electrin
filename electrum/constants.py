@@ -71,6 +71,10 @@ class AbstractNet:
     BOLT11_HRP: str
     GENESIS: str
     BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS: int = 0
+    # Set to False on networks that have no Lightning Network support.
+    # When False, wallet.can_have_lightning() returns False unconditionally,
+    # hiding all LN UI and preventing channel creation.
+    HAS_LIGHTNING: bool = True
     # TODO(rincoin-bip44): Each subclass must set BIP44_COIN_TYPE to its
     # SLIP-0044 registered coin type.  For Rincoin the final value is PENDING
     # registration at https://github.com/satoshilabs/slips/blob/master/slip-0044.md
@@ -282,7 +286,9 @@ class RincoinMainnet(AbstractNet):
     BOLT11_HRP = SEGWIT_HRP
     GENESIS = "000096bdd6e4613ca89b074ebd6f609aba6fe3f868b34ee79380aa3bc7a8c9db"
     DEFAULT_PORTS = {'t': '50001', 's': '50002'}
-    BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS = 0  # No LN on Rincoin
+    BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS = 0
+    # Rincoin has no Lightning Network — disable all LN functionality in the wallet.
+    HAS_LIGHTNING = False
 
     # Rincoin Core reuses standard BTC xpub/xprv serialisation bytes so that
     # hardware wallets derive keys correctly.  The coin type in the BIP-44
@@ -356,6 +362,8 @@ class RincoinTestnet(AbstractNet):
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
     BIP44_COIN_TYPE = 1             # shared testnet coin type (BIP-44 convention)
 
+    # Rincoin has no Lightning Network.
+    HAS_LIGHTNING = False
     # PoW (TESTNET=True already bypasses PoW checks, but set consistently)
     MAX_TARGET = 0x0000ffff00000000000000000000000000000000000000000000000000000000
     SPV_SKIP_DA_BITS_CHECK = True

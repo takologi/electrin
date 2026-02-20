@@ -521,6 +521,13 @@ class Abstract_Wallet(ABC, Logger, EventListener):
 
     def can_have_lightning(self) -> bool:
         """ whether this wallet can create new channels """
+        # Networks that have no Lightning infrastructure (e.g. Rincoin) set
+        # HAS_LIGHTNING = False on their AbstractNet subclass.  This is the
+        # single authoritative gate: all LN UI and channel-creation paths call
+        # can_have_lightning(), so setting the constant is sufficient to
+        # disable Lightning completely without touching any other code.
+        if not constants.net.HAS_LIGHTNING:
+            return False
         # we want static_remotekey to be a wallet address
         if not self.txin_type == 'p2wpkh':
             return False
