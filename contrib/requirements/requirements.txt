@@ -9,6 +9,10 @@ jsonpatch
 electrum_ecc>=0.0.4,<0.1
 electrum_aionostr>=0.1.0,<0.2
 
+# Rincoin — RinHash (BLAKE3 → Argon2d → SHA3-256) dependencies
+blake3>=0.3
+argon2-cffi>=21.0
+
 # - upper limit to avoid needing hatchling at build-time :/
 #   (however newer versions should work at runtime)
 attrs>=20.1.0,<23

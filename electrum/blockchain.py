@@ -89,6 +89,9 @@ def hash_header(header: dict) -> str:
 
 def hash_raw_header(header: bytes) -> str:
     assert isinstance(header, bytes)
+    if constants.net.NET_NAME.startswith('rincoin'):
+        from .rinhash import rinhash as _rinhash
+        return hash_encode(_rinhash(header))
     return hash_encode(sha256d(header))
 
 
