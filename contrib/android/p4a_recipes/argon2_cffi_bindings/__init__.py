@@ -18,14 +18,14 @@ class Argon2CffiBindingsRecipe(PythonRecipe):
 
     def get_recipe_env(self, arch=None, with_flags_in_cc=True):
         env = super().get_recipe_env(arch, with_flags_in_cc)
-        # p4a sets PYTHONHOME during recipe builds to point at the target
-        # Python, which hides hostpython3's own Lib/site-packages
-        # (including setuptools).  Prepend hostpython3's site-packages to
-        # PYTHONPATH so that setup.py can 'import setuptools' regardless.
+
+        # 1) p4a sets PYTHONHOME to the target Python during builds, which
+        #    hides hostpython3's own Lib/site-packages (including setuptools).
+        #    Prepend hostpython3's site-packages to PYTHONPATH explicitly.
         hp_sp = os.path.join(os.path.dirname(str(self.ctx.hostpython)),
                              'Lib', 'site-packages')
         if not os.path.isdir(hp_sp):
-            # Fallback: search the build tree for hostpython3 site-packages
+            # Fallback: glob search in the build tree
             matches = glob.glob(os.path.join(
                 self.ctx.build_dir, 'other_builds', 'hostpython3',
                 '*', 'hostpython3', 'native-build', 'Lib', 'site-packages'))
@@ -35,31 +35,20 @@ class Argon2CffiBindingsRecipe(PythonRecipe):
             existing = env.get('PYTHONPATH', '')
             env['PYTHONPATH'] = hp_sp + (os.pathsep + existing
                                          if existing else '')
+
+        # 2) argon2-cffi-bindings' _ffi_build.py detects the HOST arch
+        #    (x86_64) and selects the SSE2-optimised libargon2/src/opt.c,
+        #    which fails to compile for the ARM64 target. Setting
+        #    ARGON2_CFFI_USE_SSE2=0 forces the portable ref.c path and
+        #    also drops the -msse2 compile flag.
+        env['ARGON2_CFFI_USE_SSE2'] = '0'
+
         return env
 
     def build_arch(self, arch):
+        # Delete any _ffi.c cached from a prior failed run that still
+        # references opt.c (wrong arch) so cffi regenerates it cleanly.
         build_dir = self.get_build_dir(arch.arch)
-
-        # The CFFI builder chooses between libargon2/src/opt.c (SSE2,
-        # x86-only) and ref.c (portable) based on the HOST machine arch.
-        # When cross-compiling for ARM64 from an x86 host, opt.c is
-        # selected, which fails with clang for aarch64.  Force ref.c.
-        for path in (
-            glob.glob(os.path.join(build_dir, '**', '*.py'), recursive=True)
-            + glob.glob(os.path.join(build_dir, '**', '*.c'), recursive=True)
-        ):
-            try:
-                with open(path, 'rb') as fh:
-                    data = fh.read()
-                if b'libargon2/src/opt.c' in data:
-                    with open(path, 'wb') as fh:
-                        fh.write(data.replace(
-                            b'libargon2/src/opt.c',
-                            b'libargon2/src/ref.c'))
-            except (OSError, PermissionError):
-                pass
-
-        # Remove cached _ffi.c so cffi regenerates it using ref.c
         for cached in glob.glob(
                 os.path.join(build_dir, '**', '_ffi.c'), recursive=True):
             try:
@@ -73,4 +62,5 @@ class Argon2CffiBindingsRecipe(PythonRecipe):
 
 
 recipe = Argon2CffiBindingsRecipe()
+
 
