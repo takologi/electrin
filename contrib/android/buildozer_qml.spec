@@ -77,6 +77,10 @@ requirements =
     libffi,
     libsecp256k1,
     pycryptodomex,
+    cffi,
+    blake3,
+    argon2_cffi_bindings,
+    argon2_cffi,
     pyqt6sip,
     pyqt6,
     libzbar

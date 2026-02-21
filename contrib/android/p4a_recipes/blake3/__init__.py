@@ -1,0 +1,18 @@
+from pythonforandroid.recipe import PythonRecipe
+
+
+assert PythonRecipe.depends == ['python3']
+assert PythonRecipe.python_depends == []
+
+
+class Blake3Recipe(PythonRecipe):
+    # 0.4.1 is the last CFFI-based release (no Rust toolchain required).
+    # Later releases (≥ 1.0.0) require Rust and cannot currently be
+    # cross-compiled for Android in the p4a environment.
+    version = "0.4.1"
+    sha512sum = "3c08e6bec2d69d6e7ce57dde3f8428f0d1b40f596b38a979f4a2f930061f14067f5675b4f74207d4bcccc4dda6b49f79cf48093d50a6b625e9bbebacecdf77ce"
+    url = "https://files.pythonhosted.org/packages/b0/8d/43eafa8a785547c33b611068ffd6d914f5c5f96637d5b453abc556f095a0/blake3-{version}.tar.gz"
+    depends = ["setuptools", "cffi"]
+
+
+recipe = Blake3Recipe()
