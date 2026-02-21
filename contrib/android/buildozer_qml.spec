@@ -1,13 +1,13 @@
 [app]
 
 # (str) Title of your application
-title = Electrum
+title = Electrin
 
 # (str) Package name
-package.name = Electrum
+package.name = Electrin
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.electrum
+package.domain = org.electrin
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -175,7 +175,7 @@ android.gradle_dependencies =
     com.android.support:support-compat:28.0.0,
     org.jetbrains.kotlin:kotlin-stdlib:1.8.22
 
-android.add_activities = org.electrum.qr.SimpleScannerActivity, org.electrum.biometry.BiometricActivity
+android.add_activities = org.electrin.qr.SimpleScannerActivity, org.electrin.biometry.BiometricActivity
 
 # (list) Put these files or directories in the apk res directory.
 # The option may be used in three ways, the value may contain one or zero ':'

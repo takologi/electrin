@@ -1,4 +1,4 @@
-package org.electrum.qr;
+package org.electrin.qr;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -27,13 +27,13 @@ import de.markusfisch.android.zxingcpp.ZxingCpp.Result;
 import de.markusfisch.android.zxingcpp.ZxingCpp.ContentType;
 
 
-import org.electrum.electrum.res.R; // package set in build.gradle
+import org.electrin.electrin.res.R; // package set in build.gradle
 
 public class SimpleScannerActivity extends Activity {
     private static final int MY_PERMISSIONS_CAMERA = 1002;
 
     private BarcodeScannerView mScannerView = null;
-    final String TAG = "org.electrum.qr.SimpleScannerActivity";
+    final String TAG = "org.electrin.qr.SimpleScannerActivity";
 
     private boolean mAlreadyRequestedPermissions = false;
 

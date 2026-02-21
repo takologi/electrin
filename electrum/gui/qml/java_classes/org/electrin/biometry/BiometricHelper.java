@@ -1,4 +1,4 @@
-package org.electrum.biometry;
+package org.electrin.biometry;
 
 import android.content.Context;
 import android.content.pm.PackageManager;

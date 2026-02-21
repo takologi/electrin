@@ -1,4 +1,4 @@
-package org.electrum.biometry;
+package org.electrin.biometry;
 
 import android.app.Activity;
 import android.os.Build;
@@ -22,7 +22,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-import org.electrum.electrum.res.R;
+import org.electrin.electrin.res.R;
 
 public class BiometricActivity extends Activity {
     private static final String TAG = "BiometricActivity";
