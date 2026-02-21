@@ -1,3 +1,4 @@
+import glob
 import os
 
 from pythonforandroid.recipe import PythonRecipe
@@ -15,19 +16,38 @@ class Argon2CffiBindingsRecipe(PythonRecipe):
     url = "https://files.pythonhosted.org/packages/5c/2d/db8af0df73c1cf454f71b2bbe5e356b8c1f8041c979f505b3d3186e520a9/argon2_cffi_bindings-{version}.tar.gz"
     depends = ["setuptools", "cffi"]
 
+    def get_recipe_env(self, arch=None, with_flags_in_cc=True):
+        env = super().get_recipe_env(arch, with_flags_in_cc)
+        # p4a sets PYTHONHOME during recipe builds to point at the target
+        # Python, which hides hostpython3's own Lib/site-packages
+        # (including setuptools).  Prepend hostpython3's site-packages to
+        # PYTHONPATH so that setup.py can 'import setuptools' regardless.
+        hp_sp = os.path.join(os.path.dirname(str(self.ctx.hostpython)),
+                             'Lib', 'site-packages')
+        if not os.path.isdir(hp_sp):
+            # Fallback: search the build tree for hostpython3 site-packages
+            matches = glob.glob(os.path.join(
+                self.ctx.build_dir, 'other_builds', 'hostpython3',
+                '*', 'hostpython3', 'native-build', 'Lib', 'site-packages'))
+            if matches:
+                hp_sp = matches[0]
+        if os.path.isdir(hp_sp):
+            existing = env.get('PYTHONPATH', '')
+            env['PYTHONPATH'] = hp_sp + (os.pathsep + existing
+                                         if existing else '')
+        return env
+
     def build_arch(self, arch):
-        import glob
-        import os
         build_dir = self.get_build_dir(arch.arch)
 
         # The CFFI builder chooses between libargon2/src/opt.c (SSE2,
         # x86-only) and ref.c (portable) based on the HOST machine arch.
         # When cross-compiling for ARM64 from an x86 host, opt.c is
         # selected, which fails with clang for aarch64.  Force ref.c.
-        for path in glob.glob(
-                os.path.join(build_dir, '**', '*.py'), recursive=True) + \
-                glob.glob(
-                os.path.join(build_dir, '**', '*.c'), recursive=True):
+        for path in (
+            glob.glob(os.path.join(build_dir, '**', '*.py'), recursive=True)
+            + glob.glob(os.path.join(build_dir, '**', '*.c'), recursive=True)
+        ):
             try:
                 with open(path, 'rb') as fh:
                     data = fh.read()
@@ -52,18 +72,5 @@ class Argon2CffiBindingsRecipe(PythonRecipe):
         super().build_arch(arch)
 
 
-        env = super().get_recipe_env(arch, with_flags_in_cc)
-        # p4a sets PYTHONHOME during builds to point at the target Python,
-        # which hides hostpython3's own Lib/site-packages (including
-        # setuptools).  Prepend hostpython3's site-packages to PYTHONPATH
-        # so that setup.py can 'import setuptools' regardless.
-        hp_sp = os.path.join(os.path.dirname(self.ctx.hostpython),
-                             'Lib', 'site-packages')
-        if os.path.isdir(hp_sp):
-            existing = env.get('PYTHONPATH', '')
-            env['PYTHONPATH'] = hp_sp + (os.pathsep + existing
-                                         if existing else '')
-        return env
-
-
 recipe = Argon2CffiBindingsRecipe()
+
