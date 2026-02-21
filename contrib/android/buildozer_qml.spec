@@ -4,7 +4,7 @@
 title = Electrin
 
 # (str) Package name
-package.name = Electrin
+package.name = electrin
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.electrin

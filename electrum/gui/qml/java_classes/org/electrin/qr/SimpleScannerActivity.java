@@ -27,7 +27,7 @@ import de.markusfisch.android.zxingcpp.ZxingCpp.Result;
 import de.markusfisch.android.zxingcpp.ZxingCpp.ContentType;
 
 
-import org.electrin.electrin.res.R; // package set in build.gradle
+import org.electrum.electrum.res.R; // package set in build.gradle (p4a qt6 bootstrap template)
 
 public class SimpleScannerActivity extends Activity {
     private static final int MY_PERMISSIONS_CAMERA = 1002;

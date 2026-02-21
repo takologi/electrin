@@ -22,7 +22,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-import org.electrin.electrin.res.R;
+import org.electrum.electrum.res.R;
 
 public class BiometricActivity extends Activity {
     private static final String TAG = "BiometricActivity";
