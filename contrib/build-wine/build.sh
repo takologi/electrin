@@ -15,6 +15,10 @@ BUILD_UID=$(/usr/bin/stat -c %u "$PROJECT_ROOT")
 . "$CONTRIB"/build_tools_util.sh
 
 info "Clearing $CONTRIB_WINE/dist..."
+if [ -d "$CONTRIB_WINE/dist" ] && [ -n "$(ls -A "$CONTRIB_WINE/dist" 2>/dev/null)" ]; then
+    docker run --rm -v "$CONTRIB_WINE/dist":/dist alpine sh -c "find /dist -mindepth 1 -delete" \
+        || true  # best-effort; plain rm below will catch any remaining host-owned files
+fi
 rm -rf "$CONTRIB_WINE"/dist/*
 
 
