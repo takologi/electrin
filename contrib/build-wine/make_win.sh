@@ -90,7 +90,7 @@ fi
 info "Resetting modification time in C:\Python..."
 # (Because of some bugs in pyinstaller)
 pushd /opt/wine64/drive_c/python*
-find -exec touch -h {} +
+find -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} +
 popd
 ls -l /opt/wine64/drive_c/python*
 
