@@ -251,7 +251,7 @@ rm -rf "$PYDIR"/site-packages/*.egg-info/
 for f in "$PYDIR"/site-packages/slip10-*.dist-info2; do mv "$f" "$(echo "$f" | sed s/\.dist-info2/\.dist-info/)"; done
 
 
-find -exec touch -h -d '2000-11-11T11:11:11+00:00' {} +
+find -exec touch -h {} +
 
 
 info "creating the AppImage."

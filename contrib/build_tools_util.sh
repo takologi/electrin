@@ -157,7 +157,7 @@ if ! [ -x "$(command -v realpath)" ]; then
 fi
 
 
-export SOURCE_DATE_EPOCH=1530212462
+export SOURCE_DATE_EPOCH=$(date -u +%s)
 export ZERO_AR_DATE=1 # for macOS
 export PYTHONHASHSEED=22
 # Set the build type, overridden by wine build
