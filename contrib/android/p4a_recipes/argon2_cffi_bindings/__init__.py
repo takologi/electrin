@@ -1,5 +1,6 @@
 import glob
 import os
+import shutil
 
 from pythonforandroid.recipe import PythonRecipe
 
@@ -71,6 +72,20 @@ class Argon2CffiBindingsRecipe(PythonRecipe):
                 pass
 
         super().build_arch(arch)
+
+        # setup.py install only installs the CFFI extension (_ffi.abi3.so)
+        # but not the package's __init__.py, because setup.py relies on
+        # pyproject.toml's [tool.setuptools.packages.find] which is not
+        # processed during legacy 'setup.py install'.  Copy it manually.
+        build_dir = self.get_build_dir(arch.arch)
+        install_dir = self.ctx.get_python_install_dir(arch.arch)
+        src_init = os.path.join(build_dir, 'src',
+                                '_argon2_cffi_bindings', '__init__.py')
+        dst_init = os.path.join(install_dir,
+                                '_argon2_cffi_bindings', '__init__.py')
+        if os.path.isfile(src_init) and not os.path.isfile(dst_init):
+            os.makedirs(os.path.dirname(dst_init), exist_ok=True)
+            shutil.copy2(src_init, dst_init)
 
 
 recipe = Argon2CffiBindingsRecipe()
