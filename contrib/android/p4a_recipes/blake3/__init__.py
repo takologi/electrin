@@ -36,6 +36,17 @@ class Blake3Recipe(PythonRecipe):
         if os.path.isdir(hp_sp):
             existing = env.get('PYTHONPATH', '')
             env['PYTHONPATH'] = hp_sp + (os.pathsep + existing if existing else '')
+
+        # On Android the linker does not resolve Python C-API symbols unless
+        # the extension is explicitly linked against libpython.  PythonRecipe
+        # only adds -lpython when call_hostpython_via_targetpython is False,
+        # but blake3 uses a custom build_arch so we add it here explicitly.
+        python_recipe = self.ctx.python_recipe
+        env['LDFLAGS'] += ' -L{} -lpython{}'.format(
+            python_recipe.link_root(arch.arch),
+            python_recipe.link_version,
+        )
+
         return env
 
     def build_arch(self, arch):

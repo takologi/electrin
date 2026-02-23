@@ -31,6 +31,16 @@ pushd "$CONTRIB_ANDROID"
 
 info "apk building phase starts."
 
+# Fix p4a distribute_javaclasses bug: it copies the dist-name directory itself
+# into src/main/java/ instead of its contents, causing wrong paths like
+# src/main/java/electrin/org/... instead of src/main/java/org/...
+# See: pythonforandroid/bootstrap.py distribute_javaclasses()
+P4A_BOOTSTRAP_PY="$(python3 -c 'import pythonforandroid.bootstrap; print(pythonforandroid.bootstrap.__file__)')" 2>/dev/null || true
+if [ -n "$P4A_BOOTSTRAP_PY" ] && grep -q 'glob.glob(javaclass_dir)' "$P4A_BOOTSTRAP_PY"; then
+    info "Patching p4a distribute_javaclasses to copy contents instead of directory..."
+    sed -i "s|filenames = glob.glob(javaclass_dir)|filenames = glob.glob(javaclass_dir + '/*')|" "$P4A_BOOTSTRAP_PY"
+fi
+
 # Uncomment and change below to set a custom android package id,
 # e.g. to allow simultaneous mainnet and testnet installs of the apk.
 # defaults:

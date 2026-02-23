@@ -17,7 +17,9 @@ import hashlib
 try:
     import blake3 as _blake3_mod
     _have_blake3 = True
-except ImportError:
+except ImportError as e:
+    import logging as _logging
+    _logging.getLogger(__name__).error(f"Failed to import blake3: {e}")
     _have_blake3 = False
 
 try:
