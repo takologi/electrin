@@ -157,7 +157,7 @@ android.accept_sdk_license = True
 #android.add_jars = foo.jar,bar.jar,path/to/more/*.jar
 #android.add_jars = lib/android/zbar.jar
 
-android.add_jars = .buildozer/android/platform/*/build/libs_collections/Electrin/jar/*.jar
+android.add_jars = .buildozer/android/platform/*/build/libs_collections/electrin/jar/*.jar
 
 
 android.add_aars =
