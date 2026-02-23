@@ -96,14 +96,14 @@ base_units = {'RIN':8, 'mRIN':5, 'bits':2, 'sat':0}
 base_units_inverse = inv_dict(base_units)
 base_units_list = ['RIN', 'mRIN', 'bits', 'sat']  # list(dict) does not guarantee order
 
-DECIMAL_POINT_DEFAULT = 5  # mBTC
+DECIMAL_POINT_DEFAULT = 5  # mRIN
 
 
 class UnknownBaseUnit(Exception): pass
 
 
 def decimal_point_to_base_unit_name(dp: int) -> str:
-    # e.g. 8 -> "BTC"
+    # e.g. 8 -> "RIN"
     try:
         return base_units_inverse[dp]
     except KeyError:
@@ -112,7 +112,7 @@ def decimal_point_to_base_unit_name(dp: int) -> str:
 
 def base_unit_name_to_decimal_point(unit_name: str) -> int:
     """Returns the max number of digits allowed after the decimal point."""
-    # e.g. "BTC" -> 8
+    # e.g. "RIN" -> 8
     try:
         return base_units[unit_name]
     except KeyError:
