@@ -25,7 +25,8 @@ except ImportError as e:
 try:
     from argon2.low_level import hash_secret_raw as _argon2d_raw, Type as _Argon2Type
     _have_argon2 = True
-except ImportError:
+except ImportError as e:
+    _logging.getLogger(__name__).error(f"Failed to import argon2: {e}")
     _have_argon2 = False
 
 _ARGON2_SALT = b"RinCoinSalt"

@@ -43,6 +43,18 @@ class Argon2CffiBindingsRecipe(PythonRecipe):
         #    also drops the -msse2 compile flag.
         env['ARGON2_CFFI_USE_SSE2'] = '0'
 
+        # 3) On Android the linker does not resolve Python C-API symbols
+        #    unless the extension is explicitly linked against libpython.
+        #    PythonRecipe only adds -lpython when
+        #    call_hostpython_via_targetpython is False; CFFI API-mode
+        #    extensions (_ffi.so) still call into the Python C-API, so
+        #    we must add the flag here.
+        python_recipe = self.ctx.python_recipe
+        env['LDFLAGS'] += ' -L{} -lpython{}'.format(
+            python_recipe.link_root(arch.arch),
+            python_recipe.link_version,
+        )
+
         return env
 
     def build_arch(self, arch):
