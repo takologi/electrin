@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- mode: python -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrin - lightweight Rincoin client
 # Copyright (C) 2011 thomasv@gitorious
 #
 # Permission is hereby granted, free of charge, to any person
@@ -32,7 +32,7 @@ _min_python_version_tuple = tuple(map(int, (MIN_PYTHON_VERSION.split("."))))
 
 
 if sys.version_info[:3] < _min_python_version_tuple:
-    sys.exit("Error: Electrum requires Python version >= %s..." % MIN_PYTHON_VERSION)
+    sys.exit("Error: Electrin requires Python version >= %s..." % MIN_PYTHON_VERSION)
 
 
 import warnings
@@ -162,7 +162,7 @@ def init_cmdline(config_options, wallet_path, *, rpcserver: bool, config: 'Simpl
 
     if cmd.requires_wallet and not storage.file_exists():
         print_msg("Error: Wallet file not found.")
-        print_msg("Type 'electrum create' to create a new wallet, or provide a path to a wallet with the -w option")
+        print_msg("Type 'electrin create' to create a new wallet, or provide a path to a wallet with the -w option")
         sys_exit(1)
 
     # important warning
@@ -458,7 +458,7 @@ def main():
         lockfile = daemon.get_lockfile(config)
         if os.path.exists(lockfile):
             print_stderr("Daemon already running (lockfile detected).")
-            print_stderr("Run 'electrum stop' to stop the daemon.")
+            print_stderr("Run 'electrin stop' to stop the daemon.")
             sys.exit(1)
         # Initialise rpc credentials to random if not set yet. This would normally be done
         # later anyway, but we need to avoid the two sides of the fork setting conflicting random creds.
@@ -556,7 +556,7 @@ def handle_cmd(*, cmdname: str, config: 'SimpleConfig', config_options: dict):
             try:
                 result = daemon.request(config, 'run_cmdline', (config_options,), timeout)
             except daemon.DaemonNotRunning:
-                print_msg("Daemon not running; try 'electrum daemon -d'")
+                print_msg("Daemon not running; try 'electrin daemon -d'")
                 if not cmd.requires_network:
                     print_msg("To run this command without a daemon, use --offline")
                 if cmd.name == "stop":  # remove lockfile if it exists, as daemon looks dead
@@ -584,7 +584,7 @@ def handle_cmd(*, cmdname: str, config: 'SimpleConfig', config_options: dict):
             lockfile = daemon.get_lockfile(config)
             if os.path.exists(lockfile):
                 print_stderr("Daemon already running (lockfile detected)")
-                print_stderr("Run 'electrum stop' to stop the daemon.")
+                print_stderr("Run 'electrin stop' to stop the daemon.")
                 print_stderr("Run this command without --offline to interact with the daemon")
                 sys_exit(1)
             init_cmdline(config_options, wallet_path, rpcserver=False, config=config)

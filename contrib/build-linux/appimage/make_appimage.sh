@@ -7,7 +7,7 @@ CONTRIB="$PROJECT_ROOT/contrib"
 CONTRIB_APPIMAGE="$CONTRIB/build-linux/appimage"
 DISTDIR="$PROJECT_ROOT/dist"
 BUILDDIR="$CONTRIB_APPIMAGE/build/appimage"
-APPDIR="$BUILDDIR/electrum.AppDir"
+APPDIR="$BUILDDIR/electrin.AppDir"
 CACHEDIR="$CONTRIB_APPIMAGE/.cache/appimage"
 TYPE2_RUNTIME_REPO_DIR="$CACHEDIR/type2-runtime"
 export DLL_TARGET_DIR="$CACHEDIR/dlls"
@@ -25,7 +25,7 @@ PY_VER_MAJOR="3.12"  # as it appears in fs paths
 PKG2APPIMAGE_COMMIT="a9c85b7e61a3a883f4a35c41c5decb5af88b6b5d"
 
 VERSION=$(git describe --tags --dirty --always)
-APPIMAGE="$DISTDIR/electrum-$VERSION-x86_64.AppImage"
+APPIMAGE="$DISTDIR/electrin-$VERSION-x86_64.AppImage"
 
 rm -rf "$BUILDDIR"
 mkdir -p "$APPDIR" "$CACHEDIR" "$PIP_CACHE_DIR" "$DISTDIR" "$DLL_TARGET_DIR"
@@ -114,7 +114,7 @@ info "installing pip."
 break_legacy_easy_install
 
 
-info "preparing electrum-locale."
+info "preparing electrin-locale."
 (
     "$CONTRIB/locale/build_cleanlocale.sh"
     # we want the binary to have only compiled (.mo) locale files; not source (.po) files
@@ -143,7 +143,7 @@ export FROZENLIST_NO_EXTENSIONS=1
 
 export ELECTRUM_ECC_DONT_COMPILE=1
 
-info "installing electrum and its dependencies."
+info "installing electrin and its dependencies."
 "$python" -m pip install --no-build-isolation --no-dependencies --no-binary :all: --no-warn-script-location \
     --cache-dir "$PIP_CACHE_DIR" -r "$CONTRIB/deterministic-build/requirements.txt"
 "$python" -m pip install --no-build-isolation --no-dependencies --no-binary :all: --only-binary PyQt6,PyQt6-Qt6,cryptography --no-warn-script-location \

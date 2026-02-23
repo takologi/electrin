@@ -24,7 +24,7 @@ if ([ "$OMIT_UNCLEAN_FILES" != 1 ]); then
     "$CONTRIB"/make_packages.sh || fail "make_packages failed"
 fi
 
-info "preparing electrum-locale."
+info "preparing electrin-locale."
 (
     "$CONTRIB/locale/build_cleanlocale.sh"
     # By default, include both source (.po) and compiled (.mo) locale files in the source dist.
@@ -56,12 +56,12 @@ fi
 
     VERSION=$("$CONTRIB"/print_electrum_version.py)
     if ([ "$OMIT_UNCLEAN_FILES" = 1 ]); then
-        FINAL_DISTNAME="Electrum-sourceonly-$VERSION.tar.gz"
+        FINAL_DISTNAME="Electrin-sourceonly-$VERSION.tar.gz"
     else
-        FINAL_DISTNAME="Electrum-$VERSION.tar.gz"
+        FINAL_DISTNAME="Electrin-$VERSION.tar.gz"
     fi
     if ([ "$OMIT_UNCLEAN_FILES" = 1 ]); then
-        mv "$PY_DISTDIR/Electrum-$VERSION.tar.gz" "$PY_DISTDIR/../$FINAL_DISTNAME"
+        mv "$PY_DISTDIR/Electrin-$VERSION.tar.gz" "$PY_DISTDIR/../$FINAL_DISTNAME"
         rmdir "$PY_DISTDIR"
     fi
 
@@ -71,7 +71,7 @@ fi
     cd "$BUILDDIR/dist2"
     tar -xzf "$BUILDDIR/dist1/$FINAL_DISTNAME"
     find -exec touch -h -d '2000-11-11T11:11:11+00:00' {} +
-    GZIP=-n tar --sort=name -czf "$FINAL_DISTNAME" "Electrum-$VERSION/"
+    GZIP=-n tar --sort=name -czf "$FINAL_DISTNAME" "Electrin-$VERSION/"
     mv "$FINAL_DISTNAME" "$DISTDIR/$FINAL_DISTNAME"
 )
 
