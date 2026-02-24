@@ -45,6 +45,27 @@ class QEConfig(AuthMixin, QObject):
     def getTranslatedMessage(self, key) -> str:
         return getattr(messages, key)
 
+    colorThemeChanged = pyqtSignal()
+    @pyqtProperty(str, notify=colorThemeChanged)
+    def colorTheme(self):
+        return self.config.GUI_QML_COLOR_THEME
+
+    @colorTheme.setter
+    def colorTheme(self, theme):
+        if theme not in ('system', 'dark', 'light'):
+            return
+        if self.config.GUI_QML_COLOR_THEME != theme:
+            self.config.GUI_QML_COLOR_THEME = theme
+            self.colorThemeChanged.emit()
+
+    @pyqtProperty('QVariantList', notify=colorThemeChanged)
+    def colorThemesAvailable(self):
+        return [
+            {'value': 'system', 'text': 'System default'},
+            {'value': 'dark',   'text': 'Dark'},
+            {'value': 'light',  'text': 'Light'},
+        ]
+
     languageChanged = pyqtSignal()
     @pyqtProperty(str, notify=languageChanged)
     def language(self):

@@ -38,7 +38,7 @@ except Exception as e:
         "Error: Could not import PyQt6. On Linux systems, "
         "you may try 'sudo apt-get install python3-pyqt6'") from e
 
-from PyQt6.QtGui import QGuiApplication, QCursor
+from PyQt6.QtGui import QGuiApplication, QCursor, QPalette
 from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QWidget, QMenu, QMessageBox, QDialog, QToolTip
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer, Qt
 
@@ -188,9 +188,63 @@ class ElectrumGui(BaseElectrumGui, Logger):
         self.build_tray_menu()
         self.tray.show()
 
+    @staticmethod
+    def _os_prefers_dark() -> bool:
+        """Ask the OS whether dark mode is enabled.
+        Works reliably on Windows 10+ and macOS.  On Linux it returns
+        False unless the DE exposes a colour-scheme through the Qt
+        platform theme plugin (e.g. KDE 6+).
+        """
+        try:
+            from PyQt6.QtCore import Qt
+            app = QApplication.instance()
+            cs = app.styleHints().colorScheme()
+            if cs == Qt.ColorScheme.Dark:
+                return True
+            if cs == Qt.ColorScheme.Light:
+                return False
+        except Exception:
+            pass
+        # Fallback: probe the current palette brightness
+        brightness = sum(QWidget().palette().color(QPalette.ColorRole.Window).getRgb()[0:3])
+        return brightness < (255 * 3 / 2)
+
+    @staticmethod
+    def _make_dark_palette() -> 'QPalette':
+        """Build a dark QPalette that works with the Fusion style engine.
+        No stylesheet is needed — Fusion renders native borders, padding
+        and button geometry using these colours directly.
+        """
+        from PyQt6.QtGui import QColor
+        p = QPalette()
+        p.setColor(QPalette.ColorRole.Window,          QColor(25, 35, 45))
+        p.setColor(QPalette.ColorRole.WindowText,      QColor(208, 208, 208))
+        p.setColor(QPalette.ColorRole.Base,            QColor(15, 25, 35))
+        p.setColor(QPalette.ColorRole.AlternateBase,   QColor(25, 35, 45))
+        p.setColor(QPalette.ColorRole.ToolTipBase,     QColor(25, 35, 45))
+        p.setColor(QPalette.ColorRole.ToolTipText,     QColor(208, 208, 208))
+        p.setColor(QPalette.ColorRole.Text,            QColor(208, 208, 208))
+        p.setColor(QPalette.ColorRole.Button,          QColor(45, 55, 65))
+        p.setColor(QPalette.ColorRole.ButtonText,      QColor(208, 208, 208))
+        p.setColor(QPalette.ColorRole.BrightText,      QColor(255, 51, 51))
+        p.setColor(QPalette.ColorRole.Link,            QColor(42, 130, 218))
+        p.setColor(QPalette.ColorRole.Highlight,       QColor(42, 130, 218))
+        p.setColor(QPalette.ColorRole.HighlightedText, QColor(0, 0, 0))
+        # Disabled-state colours
+        p.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText,  QColor(128, 128, 128))
+        p.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text,        QColor(128, 128, 128))
+        p.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText,  QColor(128, 128, 128))
+        p.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Highlight,   QColor(80, 80, 80))
+        p.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.HighlightedText, QColor(128, 128, 128))
+        return p
+
     def reload_app_stylesheet(self):
-        """Set the Qt stylesheet and custom colors according to the user-selected
-        light/dark theme.
+        """Set the Qt style and palette according to the user-selected theme.
+
+        Uses Fusion + dark QPalette instead of qdarkstyle CSS so that
+        native widget geometry (padding, borders, min-height) is preserved
+        identically in both light and dark modes.
+
         TODO this can ~almost be used to change the theme at runtime (without app restart),
              except for util.ColorScheme... widgets already created with colors set using
              ColorSchemeItem.as_stylesheet() and similar will not get recolored.
@@ -198,17 +252,24 @@ class ElectrumGui(BaseElectrumGui, Logger):
              - in Coins tab, the color for "frozen" UTXOs, or
              - in TxDialog, the receiving/change address colors
         """
-        use_dark_theme = self.config.GUI_QT_COLOR_THEME == 'dark'
+        theme = self.config.GUI_QT_COLOR_THEME  # 'system', 'default' (light), or 'dark'
+        if theme == 'system':
+            use_dark_theme = self._os_prefers_dark()
+        elif theme == 'dark':
+            use_dark_theme = True
+        else:  # 'default' == light
+            use_dark_theme = False
+
         if use_dark_theme:
-            try:
-                import qdarkstyle
-                self.app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt6())
-            except BaseException as e:
-                use_dark_theme = False
-                self.logger.warning(f'Error setting dark theme: {repr(e)}')
+            from PyQt6.QtWidgets import QStyleFactory
+            self.app.setStyle(QStyleFactory.create('Fusion'))
+            self.app.setPalette(self._make_dark_palette())
+            self.app.setStyleSheet('')  # clear any leftover stylesheet
         else:
             self.app.setStyleSheet(self._default_qtstylesheet)
-        # Apply any necessary stylesheet patches
+            # Restore default palette so Fusion/platform style uses light colours
+            self.app.setPalette(self.app.style().standardPalette())
+        # Apply any necessary stylesheet patches (macOS StatusBarButton, etc.)
         patch_qt_stylesheet(use_dark_theme=use_dark_theme)
         # Even if we ourselves don't set the dark theme,
         # the OS/window manager/etc might set *a dark theme*.

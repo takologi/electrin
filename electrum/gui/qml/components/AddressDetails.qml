@@ -55,7 +55,6 @@ Pane {
                     Tag {
                         visible: addressdetails.isFrozen
                         text: qsTr('Frozen')
-                        labelcolor: 'white'
                     }
                 }
 

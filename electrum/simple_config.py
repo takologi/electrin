@@ -797,7 +797,7 @@ Warning: setting this to too low will result in lots of payment failures."""),
     CURRENT_WALLET = ConfigVar('current_wallet', default=None, type_=str)
 
     GUI_QT_COLOR_THEME = ConfigVar(
-        'qt_gui_color_theme', default='default', type_=str,
+        'qt_gui_color_theme', default='system', type_=str,
         short_desc=lambda: _('Color theme'),
     )
     GUI_QT_DARK_TRAY_ICON = ConfigVar('dark_icon', default=False, type_=bool)
@@ -848,6 +848,14 @@ Warning: setting this to too low will result in lots of payment failures."""),
             'There is no guarantee Windows will respect this signal.'),
     )
 
+    GUI_QML_COLOR_THEME = ConfigVar(
+        'qml_gui_color_theme', default='dark', type_=str,
+        short_desc=lambda: _('Color theme'),
+        long_desc=lambda: _(
+            'Dark: always use dark colours. '
+            'Light: always use light colours. '
+            'System default: follow the OS dark-mode setting.'),
+    )
     GUI_QML_PREFERRED_REQUEST_TYPE = ConfigVar('preferred_request_type', default='bolt11', type_=str)
     GUI_QML_USER_KNOWS_PRESS_AND_HOLD = ConfigVar('user_knows_press_and_hold', default=False, type_=bool)
     GUI_QML_ADDRESS_LIST_SHOW_TYPE = ConfigVar('address_list_show_type', default=1, type_=int)

@@ -232,9 +232,12 @@ class SettingsDialog(QDialog, QtEventListener):
         qr_combo.currentIndexChanged.connect(on_video_device)
 
         colortheme_combo = QComboBox()
+        colortheme_combo.addItem(_('System default'), 'system')
         colortheme_combo.addItem(_('Light'), 'default')
         colortheme_combo.addItem(_('Dark'), 'dark')
         index = colortheme_combo.findData(self.config.GUI_QT_COLOR_THEME)
+        if index < 0:  # legacy config value not in list
+            index = 0
         colortheme_combo.setCurrentIndex(index)
         colortheme_label = QLabel(self.config.cv.GUI_QT_COLOR_THEME.get_short_desc() + ':')
 

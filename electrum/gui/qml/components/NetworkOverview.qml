@@ -163,7 +163,7 @@ Pane {
                                         Layout.fillWidth: false
                                         height: parent.height
                                         width: 1
-                                        color: 'white'
+                                        color: Material.foreground
                                     }
                                     Item {
                                         Layout.fillWidth: true
@@ -176,7 +176,7 @@ Pane {
                                 Layout.fillWidth: false
                                 height: parent.height
                                 width: 1
-                                color: 'white'
+                                color: Material.foreground
                             }
                         }
                         RowLayout {

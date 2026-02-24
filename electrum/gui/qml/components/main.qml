@@ -26,7 +26,11 @@ ApplicationWindow
     width: 480
     height: 800
 
-    Material.theme: Material.Dark
+    Material.theme: Config.colorTheme === 'dark'
+                      ? Material.Dark
+                      : Config.colorTheme === 'light'
+                        ? Material.Light
+                        : Material.System
     Material.primary: Material.Indigo
     Material.accent: Material.LightBlue
     font.pixelSize: constants.fontSizeMedium
@@ -313,7 +317,7 @@ ApplicationWindow
         anchors.fill: parent
 
         z: 1000
-        color: 'black'
+        color: Material.background
 
         Behavior on opacity {
             enabled: AppController ? AppController.isAndroid() : false

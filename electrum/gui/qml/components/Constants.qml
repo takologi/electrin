@@ -27,30 +27,33 @@ Item {
 
     readonly property int fingerWidth: 64 // TODO: determine finger width from screen dimensions and resolution
 
-    property color mutedForeground: 'gray' //Qt.lighter(Material.background, 2)
+    // Whether the active Material theme is dark (used for colour branching)
+    readonly property bool isDark: Material.theme === Material.Dark
+
+    property color mutedForeground: 'gray'
     property color darkerBackground: Qt.darker(Material.background, 1.20)
     property color lighterBackground: Qt.lighter(Material.background, 1.10)
     property color darkerDialogBackground: Qt.darker(Material.dialogColor, 1.20)
-    property color notificationBackground: Qt.lighter(Material.background, 1.5)
+    property color notificationBackground: Qt.lighter(Material.background, isDark ? 1.5 : 0.92)
 
-    property color colorCredit: "#ff80ff80"
-    property color colorDebit: "#ffff8080"
+    property color colorCredit: isDark ? "#ff80ff80" : "#ff00a000"
+    property color colorDebit: isDark ? "#ffff8080" : "#ffc00000"
 
     property color colorInfo: Material.accentColor
-    property color colorWarning: 'yellow'
-    property color colorError: '#ffff8080'
-    property color colorProgress: '#ffffff80'
-    property color colorDone: '#ff80ff80'
+    property color colorWarning: isDark ? 'yellow' : '#cc8800'
+    property color colorError: isDark ? '#ffff8080' : '#ffc00000'
+    property color colorProgress: isDark ? '#ffffff80' : '#cc8800'
+    property color colorDone: isDark ? '#ff80ff80' : '#ff00a000'
     property color colorValidBackground: '#ff008000'
     property color colorInvalidBackground: '#ff800000'
-    property color colorAcceptable: '#ff8080ff'
+    property color colorAcceptable: isDark ? '#ff8080ff' : '#ff4040d0'
     property color colorOk: colorDone
 
     property color colorLightningLocal: "#6060ff"
     property color colorLightningLocalReserve: "#0000a0"
-    property color colorLightningRemote: "yellow"
+    property color colorLightningRemote: isDark ? "yellow" : "#cc8800"
     property color colorLightningRemoteReserve: Qt.darker(colorLightningRemote, 1.5)
-    property color colorChannelOpen: "#ff80ff80"
+    property color colorChannelOpen: isDark ? "#ff80ff80" : "#ff00a000"
 
     property color colorPiechartTotal: Material.accentColor
     property color colorPiechartOnchain: Qt.darker(Material.accentColor, 1.50)
@@ -61,12 +64,12 @@ Item {
     property color colorPiechartUnmatured: 'magenta'
 
     property color colorPiechartParticipant: 'gray'
-    property color colorPiechartSignature: 'yellow'
+    property color colorPiechartSignature: isDark ? 'yellow' : '#cc8800'
 
-    property color colorAddressExternal: "#8af296" //Qt.rgba(0,1,0,0.5)
-    property color colorAddressInternal: "#ffff00" //Qt.rgba(1,0.93,0,0.75)
+    property color colorAddressExternal: isDark ? "#8af296" : "#1a7a28"
+    property color colorAddressInternal: isDark ? "#ffff00" : "#cc8800"
     property color colorAddressUsed: Qt.rgba(0.5,0.5,0.5,1)
-    property color colorAddressUsedWithBalance: Qt.rgba(0.75,0.75,0.75,1)
+    property color colorAddressUsedWithBalance: isDark ? Qt.rgba(0.75,0.75,0.75,1) : Qt.rgba(0.35,0.35,0.35,1)
     property color colorAddressFrozen: Qt.rgba(0.5,0.5,1,1)
     property color colorAddressBilling: "#8cb3f2"
     property color colorAddressSwap: colorAddressBilling

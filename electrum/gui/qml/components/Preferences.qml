@@ -42,6 +42,22 @@ Pane {
                     }
 
                     Label {
+                        text: qsTr('Color theme')
+                    }
+
+                    ElComboBox {
+                        id: colorTheme
+                        textRole: 'text'
+                        valueRole: 'value'
+                        model: Config.colorThemesAvailable
+                        onCurrentValueChanged: {
+                            if (activeFocus) {
+                                Config.colorTheme = currentValue
+                            }
+                        }
+                    }
+
+                    Label {
                         text: qsTr('Language')
                     }
 
@@ -494,6 +510,7 @@ Pane {
     }
 
     Component.onCompleted: {
+        colorTheme.currentIndex = colorTheme.indexOfValue(Config.colorTheme)
         language.currentIndex = language.indexOfValue(Config.language)
         baseUnit.currentIndex = _baseunits.indexOf(Config.baseUnit)
         thousands.checked = Config.thousandsSeparator
