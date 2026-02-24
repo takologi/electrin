@@ -619,8 +619,8 @@ class SimpleConfig(Logger):
     NETWORK_AUTO_CONNECT = ConfigVar(
         'auto_connect', default=True, type_=bool,
         short_desc=lambda: _('Select server automatically'),
-        long_desc=lambda: _("If auto-connect is enabled, Electrum will always use a server that is on the longest blockchain. "
-                            "If it is disabled, you have to choose a server you want to use. Electrum will warn you if your server is lagging."),
+        long_desc=lambda: _("If auto-connect is enabled, Electrin will always use a server that is on the longest blockchain. "
+                            "If it is disabled, you have to choose a server you want to use. Electrin will warn you if your server is lagging."),
     )
     NETWORK_ONESERVER = ConfigVar(
         'oneserver', default=False, type_=bool,
@@ -629,7 +629,7 @@ class SimpleConfig(Logger):
             "This is only intended for connecting to your own fully trusted server. "
             "Using this option on a public server is a security risk and is discouraged."
             "\n\n"
-            "By default, Electrum tries to maintain connections to ~10 servers. "
+            "By default, Electrin tries to maintain connections to ~10 servers. "
             "One of these nodes gets selected to be the history server and will learn the wallet addresses. "
             "All the other nodes are *only* used for block header notifications. "
             "\n\n"
@@ -748,7 +748,7 @@ Downloading the network gossip uses quite some bandwidth and storage, and is not
 
 Note that static backups only allow you to request a force-close with the remote node. This assumes that the remote node is still online, did not lose its data, and accepts to force close the channel.
 
-If this is enabled, other nodes cannot open a channel to you. Channel recovery data is encrypted, so that only your wallet can decrypt it. However, blockchain analysis will be able to tell that the transaction was probably created by Electrum."""),
+If this is enabled, other nodes cannot open a channel to you. Channel recovery data is encrypted, so that only your wallet can decrypt it. However, blockchain analysis will be able to tell that the transaction was probably created by Electrin."""),
     )
     LIGHTNING_TO_SELF_DELAY_CSV = ConfigVar('lightning_to_self_delay', default=7 * 144, type_=int)
     LIGHTNING_MAX_FUNDING_SAT = ConfigVar('lightning_max_funding_sat', default=LN_MAX_FUNDING_SAT_LEGACY, type_=int)

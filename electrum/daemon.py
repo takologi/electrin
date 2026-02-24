@@ -241,7 +241,7 @@ class AuthenticatedServer(Logger):
             try:
                 await self.authenticate(request.headers)
             except AuthenticationInvalidOrMissing:
-                return web.Response(headers={"WWW-Authenticate": "Basic realm=Electrum"},
+                return web.Response(headers={"WWW-Authenticate": "Basic realm=Electrin"},
                                     text='Unauthorized', status=401)
             except AuthenticationCredentialsInvalid:
                 return web.Response(text='Forbidden', status=403)
@@ -356,7 +356,7 @@ class CommandsServer(AuthenticatedServer):
             else:
                 raise UserFacingException("error: current GUI does not support multiple windows")
         else:
-            raise UserFacingException("error: Electrum is running in daemon mode. Please stop the daemon first.")
+            raise UserFacingException("error: Electrin is running in daemon mode. Please stop the daemon first.")
 
     async def run_cmdline(self, config_options):
         cmdname = config_options['cmd']

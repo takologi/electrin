@@ -74,8 +74,8 @@ class Plugins(DaemonThread):
 
     pkgpath = os.path.dirname(plugins.__file__)
     # TODO: use XDG Base Directory Specification instead of hardcoding /etc
-    keyfile_posix = '/etc/electrum/plugins_key'
-    keyfile_windows = r'HKEY_LOCAL_MACHINE\SOFTWARE\Electrum\PluginsKey'
+    keyfile_posix = '/etc/electrin/plugins_key'
+    keyfile_windows = r'HKEY_LOCAL_MACHINE\SOFTWARE\Electrin\PluginsKey'
 
     @profiler
     def __init__(self, config: SimpleConfig, gui_name: str = None, cmd_only: bool = False):
@@ -243,7 +243,7 @@ class Plugins(DaemonThread):
         """creates the dir (dir_path), writes the key in file, and sets permissions to 644"""
         dir_path: str = os.path.dirname(self.keyfile_posix)
         sh_command = (
-                     f"mkdir -p {dir_path} "  # create the /etc/electrum dir
+                     f"mkdir -p {dir_path} "  # create the /etc/electrin dir
                      f"&& printf '%s' '{pubkey_hex}' > {self.keyfile_posix} "  # write the key to the file
                      f"&& chmod 644 {self.keyfile_posix} "  # set read permissions for the file
                      f"&& chmod 755 {dir_path}"  # set read permissions for the dir
@@ -418,7 +418,7 @@ class Plugins(DaemonThread):
 
         # check if the key was written correctly
         with ConnectRegistry(None, HKEY_LOCAL_MACHINE) as hkey:
-            with OpenKey(hkey, r'SOFTWARE\Electrum') as key:
+            with OpenKey(hkey, r'SOFTWARE\Electrin') as key:
                 assert key_hex == QueryValue(key, 'PluginsKey'), "incorrect registry key value"
         self.logger.debug(f'key saved successfully to {self.keyfile_windows}')
 
@@ -434,7 +434,7 @@ class Plugins(DaemonThread):
         try:
             # do a sanity check to see if the key has been deleted
             with ConnectRegistry(None, HKEY_LOCAL_MACHINE) as hkey:
-                with OpenKey(hkey, r'SOFTWARE\Electrum\PluginsKey'):
+                with OpenKey(hkey, r'SOFTWARE\Electrin\PluginsKey'):
                     raise Exception(f'Key {self.keyfile_windows} still exists, deletion failed')
         except FileNotFoundError:
             pass
@@ -455,7 +455,7 @@ class Plugins(DaemonThread):
             import winreg
             with winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE) as hkey:
                 try:
-                    with winreg.OpenKey(hkey, r"SOFTWARE\\Electrum") as key:
+                    with winreg.OpenKey(hkey, r"SOFTWARE\\Electrin") as key:
                         key_hex = winreg.QueryValue(key, "PluginsKey")
                 except Exception as e:
                     self.logger.info(f'winreg error: {e}')
@@ -1225,7 +1225,7 @@ class DeviceMgr(ThreadJob):
         # The user input has wrong PIN or passphrase, or cancelled input,
         # or it is not pairable
         raise DeviceUnpairableError(
-            _('Electrum cannot pair with your {}.\n\n'
+            _('Electrin cannot pair with your {}.\n\n'
               'Before you request bitcoins to be sent to addresses in this '
               'wallet, ensure you can pair with your device, or that you have '
               'its seed (and passphrase, if any).  Otherwise all bitcoins you '

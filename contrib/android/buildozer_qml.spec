@@ -46,7 +46,6 @@ source.exclude_dirs =
     electrum/plugins/timelock_recovery,
     electrum/plugins/trezor,
     electrum/plugins/watchtower,
-    packages/qdarkstyle,
     packages/qtpy,
     packages/bin,
     packages/share,
