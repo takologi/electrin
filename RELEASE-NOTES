@@ -1,3 +1,12 @@
+# Release 4.7.1 (Feb 25, 2026)
+ * Electrin fork changes:
+   - Comprehensive rebranding from Electrum to Electrin
+   - Dark theme: replaced qdarkstyle with native Fusion style + dark QPalette
+   - Theme selector with System / Light / Dark options (desktop and Android)
+   - Live theme switching without restart (desktop)
+   - Hidden Lightning button in QML receive invoice dialog
+   - Data directories renamed (~/.electrum → ~/.electrin)
+
 # Release 4.7.0 (Jan 22, 2026)
  * Qt GUI (desktop):
    - new: "Submarine Payments": support reverse swaps to external address (#10303)
