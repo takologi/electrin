@@ -1,7 +1,11 @@
 {
-    "127.0.0.1": {
+    "peer1.rincoin.net": {
         "pruning": "-",
-        "t": "50001",
+        "s": "50002",
+        "version": "1.4"
+    },
+    "peer2.rincoin.net": {
+        "pruning": "-",
         "s": "50002",
         "version": "1.4"
     }
