@@ -950,14 +950,18 @@ class OverlayControlMixin(GenericInputHandler):
         assert isinstance(self, OverlayControlMixin)  # only here for type-hints in IDE
         self.middle = middle
         self.overlay_widget = QWidget(self)
-        style_sheet = self.STYLE_SHEET_COMMON
-        if not ColorScheme.dark_scheme:
-            style_sheet = style_sheet + self.STYLE_SHEET_LIGHT
-        self.overlay_widget.setStyleSheet(style_sheet)
+        self.update_overlay_stylesheet()
         self.overlay_layout = QHBoxLayout(self.overlay_widget)
         self.overlay_layout.setContentsMargins(0, 0, 0, 0)
         self.overlay_layout.setSpacing(1)
         self._updateOverlayPos()
+
+    def update_overlay_stylesheet(self):
+        """Recompute and apply the overlay stylesheet for the current color scheme."""
+        style_sheet = self.STYLE_SHEET_COMMON
+        if not ColorScheme.dark_scheme:
+            style_sheet = style_sheet + self.STYLE_SHEET_LIGHT
+        self.overlay_widget.setStyleSheet(style_sheet)
 
     def resizeEvent(self, e):
         super().resizeEvent(e)

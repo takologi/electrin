@@ -61,6 +61,7 @@ class SettingsDialog(QDialog, QtEventListener):
         self.setWindowTitle(_('Preferences'))
         self.setMinimumWidth(500)
         self.config = config
+        self.window = window
         self.network = window.network
         self.app = window.app
         self.need_restart = False
@@ -243,7 +244,7 @@ class SettingsDialog(QDialog, QtEventListener):
 
         def on_colortheme(x):
             self.config.GUI_QT_COLOR_THEME = colortheme_combo.itemData(x)
-            self.need_restart = True
+            self.window.gui_object.apply_theme_live()
         colortheme_combo.currentIndexChanged.connect(on_colortheme)
 
         updatecheck_cb = checkbox_from_configvar(self.config.cv.AUTOMATIC_CENTRALIZED_UPDATE_CHECKS)

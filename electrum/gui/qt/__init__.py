@@ -244,13 +244,6 @@ class ElectrumGui(BaseElectrumGui, Logger):
         Uses Fusion + dark QPalette instead of qdarkstyle CSS so that
         native widget geometry (padding, borders, min-height) is preserved
         identically in both light and dark modes.
-
-        TODO this can ~almost be used to change the theme at runtime (without app restart),
-             except for util.ColorScheme... widgets already created with colors set using
-             ColorSchemeItem.as_stylesheet() and similar will not get recolored.
-             See e.g.
-             - in Coins tab, the color for "frozen" UTXOs, or
-             - in TxDialog, the receiving/change address colors
         """
         theme = self.config.GUI_QT_COLOR_THEME  # 'system', 'default' (light), or 'dark'
         if theme == 'system':
@@ -275,6 +268,24 @@ class ElectrumGui(BaseElectrumGui, Logger):
         # the OS/window manager/etc might set *a dark theme*.
         # Hence, try to choose colors accordingly:
         ColorScheme.update_from_widget(QWidget(), force_dark=use_dark_theme)
+
+    def apply_theme_live(self):
+        """Apply theme change immediately to all open windows.
+
+        This re-applies the palette/style (instant), updates ColorScheme,
+        then refreshes every open ElectrumWindow so that list views,
+        overlay controls, and other color-coded widgets pick up the new
+        scheme.  A few edge-case widgets (e.g. already-open TxDialogs)
+        may not fully recolor until dismissed and reopened.
+        """
+        self.reload_app_stylesheet()
+        for window in self.windows:
+            window.refresh_tabs()
+            # Re-apply overlay stylesheet on all OverlayControlMixin widgets
+            for child in window.findChildren(QWidget):
+                if hasattr(child, 'update_overlay_stylesheet'):
+                    child.update_overlay_stylesheet()
+            window.update()
 
     def build_tray_menu(self):
         if not self.tray:
