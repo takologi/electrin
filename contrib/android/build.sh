@@ -31,6 +31,23 @@ rm -f ${PROJECT_ROOT}/.buildozer
 mkdir -p "${PROJECT_ROOT}/.buildozer_$1"
 ln -s ".buildozer_$1" ${PROJECT_ROOT}/.buildozer
 
+# ── early keystore validation (before Docker build) ──────────────
+if [[ "$3" == "release" ]] ; then
+    RELEASE_KEYSTORE="$HOME/.keystore"
+    RELEASE_KEYALIAS="electrin"
+    RELEASE_PASSWD="$4"
+    if [ -z "$RELEASE_PASSWD" ]; then
+        fail "Release password not provided.\nUsage: build.sh qml <arch> release <PASSWORD>"
+    fi
+    if [ ! -f "$RELEASE_KEYSTORE" ]; then
+        fail "Keystore not found at $RELEASE_KEYSTORE\nCreate one with:\n  keytool -genkey -v -keystore ~/.keystore -alias electrin -keyalg RSA -keysize 2048 -validity 10000"
+    fi
+    keytool -list -keystore "$RELEASE_KEYSTORE" -alias "$RELEASE_KEYALIAS" \
+        -storepass "$RELEASE_PASSWD" >/dev/null 2>&1 \
+        || fail "Keystore validation failed: wrong password or alias '$RELEASE_KEYALIAS' not found in $RELEASE_KEYSTORE"
+    info "Keystore OK: alias '$RELEASE_KEYALIAS' verified, password accepted."
+fi
+
 DOCKER_BUILD_FLAGS=""
 if [ ! -z "$ELECBUILD_NOCACHE" ] ; then
     info "ELECBUILD_NOCACHE is set. forcing rebuild of docker image."

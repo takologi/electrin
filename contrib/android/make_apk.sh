@@ -58,22 +58,12 @@ fi
 
 if [[ "$3" == "release" ]] ; then
     # do release build, and sign the APKs.
+    # Note: keystore validation is done earlier in build.sh (on the host).
     TARGET="release"
     export P4A_RELEASE_KEYSTORE_PASSWD="$4"
     export P4A_RELEASE_KEYALIAS_PASSWD="$4"
     export P4A_RELEASE_KEYSTORE=~/.keystore
     export P4A_RELEASE_KEYALIAS=electrin
-    if [ -z "$P4A_RELEASE_KEYSTORE_PASSWD" ] || [ -z "$P4A_RELEASE_KEYALIAS_PASSWD" ]; then
-        fail "p4a password not defined. Usage: build.sh qml <arch> release <PASSWORD>"
-    fi
-    # Validate keystore exists and password/alias are correct before starting the long build.
-    if [ ! -f "$P4A_RELEASE_KEYSTORE" ]; then
-        fail "Keystore not found at $P4A_RELEASE_KEYSTORE. Create one with:\n  keytool -genkey -v -keystore ~/.keystore -alias electrin -keyalg RSA -keysize 2048 -validity 10000"
-    fi
-    keytool -list -keystore "$P4A_RELEASE_KEYSTORE" -alias "$P4A_RELEASE_KEYALIAS" \
-        -storepass "$P4A_RELEASE_KEYSTORE_PASSWD" >/dev/null 2>&1 \
-        || fail "Keystore validation failed: wrong password or alias '$P4A_RELEASE_KEYALIAS' not found in $P4A_RELEASE_KEYSTORE"
-    info "Keystore OK: alias '$P4A_RELEASE_KEYALIAS' found and password accepted."
 elif [[ "$3" == "release-unsigned" ]] ; then
     # do release build, but do not sign the APKs.
     TARGET="release"
