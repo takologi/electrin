@@ -108,6 +108,7 @@ ElDialog {
             FlatButton {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
+                visible: false  // Lightning not supported on Rincoin
                 enabled: Daemon.currentWallet.isLightning && (Daemon.currentWallet.lightningCanReceive.satsInt
                             > amountBtc.textAsSats.satsInt || Daemon.currentWallet.canGetZeroconfChannel)
                 text: qsTr('Lightning')
