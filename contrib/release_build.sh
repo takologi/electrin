@@ -9,7 +9,7 @@
 #   4. Android APK (arm64-v8a, release-unsigned)
 #
 # Usage:
-#   ./contrib/release_build.sh --release|--debug [--dry-run] [--no-cache] [--allow-dirty] [--android-password=PASSWORD]
+#   ./contrib/release_build.sh --release|--debug --dist-clean=none|selected|all [--dry-run] [--no-cache] [--allow-dirty] [--android-password=PASSWORD]
 #                              [--skip-sdist] [--skip-appimage] [--skip-windows] [--skip-android]
 #   ./contrib/release_build.sh --help
 #
@@ -29,8 +29,8 @@ print_help() {
 Electrin release build helper
 
 Usage:
-    ./contrib/release_build.sh --release [options]
-    ./contrib/release_build.sh --debug [options]
+    ./contrib/release_build.sh --release --dist-clean=none|selected|all [options]
+    ./contrib/release_build.sh --debug --dist-clean=none|selected|all [options]
     ./contrib/release_build.sh --help
 
 Modes (mandatory: choose exactly one):
@@ -40,6 +40,10 @@ Modes (mandatory: choose exactly one):
 General options:
     --help, -h               Show this help and exit
     --dry-run                Print selected mode/targets/options and exit (no build)
+    --dist-clean=MODE        Mandatory. Dist cleanup strategy before build:
+                             - none: keep all existing dist/ artifacts
+                             - selected: remove only artifacts for enabled targets
+                             - all: remove whole dist/ directory
     --no-cache               Rebuild docker images from scratch (ELECBUILD_NOCACHE=1)
     --allow-dirty            Allow builds with uncommitted git changes
     --android-password=PASS  Android keystore password (release mode)
@@ -52,16 +56,19 @@ Platform selection options:
 
 Examples:
     # Build everything in release mode
-    ./contrib/release_build.sh --release --android-password=YOUR_PASSWORD
+    ./contrib/release_build.sh --release --dist-clean=selected --android-password=YOUR_PASSWORD
 
     # Build only Linux AppImage + Android
-    ./contrib/release_build.sh --release --skip-sdist --skip-windows --android-password=YOUR_PASSWORD
+    ./contrib/release_build.sh --release --dist-clean=selected --skip-sdist --skip-windows --android-password=YOUR_PASSWORD
 
     # Build only AppImage
-    ./contrib/release_build.sh --release --skip-sdist --skip-windows --skip-android
+    ./contrib/release_build.sh --release --dist-clean=selected --skip-sdist --skip-windows --skip-android
 
     # Show what would run without starting builds
-    ./contrib/release_build.sh --release --dry-run --skip-sdist --skip-windows
+    ./contrib/release_build.sh --release --dist-clean=none --dry-run --skip-sdist --skip-windows
+
+    # Keep all existing artifacts explicitly
+    ./contrib/release_build.sh --release --dist-clean=none --skip-sdist --skip-windows
 
     # Show help
     ./contrib/release_build.sh --help
@@ -75,6 +82,7 @@ SKIP_WINDOWS=0
 SKIP_ANDROID=0
 ALLOW_DIRTY=0
 DRY_RUN=0
+DIST_CLEAN=""
 BUILD_MODE_RELEASE=0
 BUILD_MODE_DEBUG=0
 ANDROID_KEYSTORE_PASSWD=""
@@ -92,6 +100,9 @@ for arg in "$@"; do
                         ;;
         --dry-run)
             DRY_RUN=1
+            ;;
+        --dist-clean=*)
+            DIST_CLEAN="${arg#*=}"
             ;;
         --no-cache)
             export ELECBUILD_NOCACHE=1
@@ -137,6 +148,16 @@ if [ "$BUILD_MODE_RELEASE" -eq 0 ] && [ "$BUILD_MODE_DEBUG" -eq 0 ]; then
     fail "Missing mandatory mode flag: use --release or --debug."
 fi
 
+if [ -z "$DIST_CLEAN" ]; then
+    print_help
+    fail "Missing mandatory --dist-clean flag. Recommended: --dist-clean=none"
+fi
+
+if [ "$DIST_CLEAN" != "none" ] && [ "$DIST_CLEAN" != "selected" ] && [ "$DIST_CLEAN" != "all" ]; then
+    print_help
+    fail "Invalid --dist-clean value '$DIST_CLEAN'. Allowed: none, selected, all."
+fi
+
 if [ "$BUILD_MODE_DEBUG" -eq 1 ]; then
     fail "TODO: --debug mode is not implemented yet."
 fi
@@ -154,6 +175,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
     info "  - Windows: $([ "$SKIP_WINDOWS" -eq 0 ] && echo ENABLED || echo SKIPPED)"
     info "  - Android: $([ "$SKIP_ANDROID" -eq 0 ] && echo ENABLED || echo SKIPPED)"
     info "Options:"
+    info "  - dist-clean: $DIST_CLEAN"
     info "  - allow-dirty: $([ "$ALLOW_DIRTY" -eq 1 ] && echo YES || echo NO)"
     info "  - no-cache: $([ -n "$ELECBUILD_NOCACHE" ] && echo YES || echo NO)"
     if [ -n "$ANDROID_KEYSTORE_PASSWD" ]; then
@@ -210,8 +232,33 @@ rm -rf contrib/build-linux/sdist/build/
 rm -rf contrib/android/.cache/
 rm -rf Electrin.egg-info/ Electrum.egg-info/ *.egg-info/
 find . -type d -name __pycache__ -not -path './.venv*' -exec rm -rf {} + 2>/dev/null || true
-rm -rf dist/
 mkdir -p dist
+
+case "$DIST_CLEAN" in
+    all)
+        info "Cleaning dist/ artifacts: mode=all"
+        rm -rf dist/
+        mkdir -p dist
+        ;;
+    selected)
+        info "Cleaning dist/ artifacts: mode=selected"
+        if [ "$SKIP_SDIST" -eq 0 ]; then
+            rm -f dist/*.tar.gz
+        fi
+        if [ "$SKIP_APPIMAGE" -eq 0 ]; then
+            rm -f dist/*.AppImage
+        fi
+        if [ "$SKIP_WINDOWS" -eq 0 ]; then
+            rm -f dist/*.exe
+        fi
+        if [ "$SKIP_ANDROID" -eq 0 ]; then
+            rm -f dist/*android*.apk dist/*-arm64-v8a*.apk
+        fi
+        ;;
+    none)
+        info "Cleaning dist/ artifacts: mode=none (keeping existing dist/ files)"
+        ;;
+esac
 
 # ── 1. sdist ─────────────────────────────────────────────────────
 if [ "$SKIP_SDIST" -eq 0 ]; then
