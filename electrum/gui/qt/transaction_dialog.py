@@ -238,12 +238,12 @@ class TxInOutWidget(QWidget):
                 # addr
                 if addr is None:
                     address_str = '<address unknown>'
-                elif len(addr) <= 42:
+                elif len(addr) <= 43:
                     address_str = addr
                 else:
-                    address_str = addr[0:30] + '…' + addr[-11:]
+                    address_str = addr[0:31] + '…' + addr[-11:]
                 cursor.insertText(address_str, tcf_addr)
-                cursor.insertText(" " * max(0, 42 - len(address_str)), tcf_ext)  # padding
+                cursor.insertText(" " * max(0, 43 - len(address_str)), tcf_ext)  # padding
                 cursor.insertText('\t', tcf_ext)
                 # value
                 value_str = self.main_window.format_amount(value, whitespaces=True)

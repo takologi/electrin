@@ -178,7 +178,6 @@ class ElectrumGui(BaseElectrumGui, Logger):
         self.app.new_window_signal.connect(self.start_new_window)
         self.app.quit_signal.connect(self.app.quit, Qt.ConnectionType.QueuedConnection)
         # maybe set dark theme
-        self._default_qtstylesheet = self.app.styleSheet()
         self.reload_app_stylesheet()
 
     def _init_tray(self):
@@ -253,15 +252,18 @@ class ElectrumGui(BaseElectrumGui, Logger):
         else:  # 'default' == light
             use_dark_theme = False
 
+        from PyQt6.QtWidgets import QStyleFactory
+        # Always use Fusion so palette-driven theming works in both modes.
+        self.app.setStyle(QStyleFactory.create('Fusion'))
+        # Clear any leftover stylesheet BEFORE setting the palette so that
+        # Qt's style-sheet resolution doesn't cache stale palette colours.
+        self.app.setStyleSheet('')
+
         if use_dark_theme:
-            from PyQt6.QtWidgets import QStyleFactory
-            self.app.setStyle(QStyleFactory.create('Fusion'))
             self.app.setPalette(self._make_dark_palette())
-            self.app.setStyleSheet('')  # clear any leftover stylesheet
         else:
-            self.app.setStyleSheet(self._default_qtstylesheet)
-            # Restore default palette so Fusion/platform style uses light colours
             self.app.setPalette(self.app.style().standardPalette())
+
         # Apply any necessary stylesheet patches (macOS StatusBarButton, etc.)
         patch_qt_stylesheet(use_dark_theme=use_dark_theme)
         # Even if we ourselves don't set the dark theme,
@@ -273,19 +275,28 @@ class ElectrumGui(BaseElectrumGui, Logger):
         """Apply theme change immediately to all open windows.
 
         This re-applies the palette/style (instant), updates ColorScheme,
-        then refreshes every open ElectrumWindow so that list views,
-        overlay controls, and other color-coded widgets pick up the new
-        scheme.  A few edge-case widgets (e.g. already-open TxDialogs)
-        may not fully recolor until dismissed and reopened.
+        then fully redraws every open ElectrumWindow: form-based tabs
+        (Send, Receive) are rebuilt from scratch so that all widgets
+        pick up the new colour scheme, and list-based tabs are refreshed.
+        In-progress form content is lost in exchange for a correct redraw.
         """
         self.reload_app_stylesheet()
+        new_palette = self.app.palette()
+        style = self.app.style()
         for window in self.windows:
+            # Force the new palette onto every existing widget so that
+            # already-visible backgrounds, labels, etc. repaint immediately.
+            for widget in [window] + window.findChildren(QWidget):
+                widget.setPalette(new_palette)
+                style.unpolish(widget)
+                style.polish(widget)
+            window.rebuild_form_tabs()
             window.refresh_tabs()
             # Re-apply overlay stylesheet on all OverlayControlMixin widgets
             for child in window.findChildren(QWidget):
                 if hasattr(child, 'update_overlay_stylesheet'):
                     child.update_overlay_stylesheet()
-            window.update()
+            window.repaint()
 
     def build_tray_menu(self):
         if not self.tray:

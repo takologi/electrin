@@ -225,7 +225,8 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         is_spk_script = pi.type == PaymentIdentifierType.SPK and not pi.spk_is_address
         valid_amount = is_spk_script or bool(self.amount_e.get_amount())
         ready_to_finalize = not pi.need_resolve()
-        self.send_button.setEnabled(pi.is_valid() and not pi_error and valid_amount and ready_to_finalize)
+        enable = pi.is_valid() and not pi_error and valid_amount and ready_to_finalize
+        self.send_button.setEnabled(enable)
 
     def do_paste(self):
         self.logger.debug('do_paste')
@@ -485,9 +486,11 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
 
         amount_valid = is_spk_script or bool(self.amount_e.get_amount())
 
-        self.send_button.setEnabled(not pi_unusable and amount_valid and not pi.has_expired())
-        self.save_button.setEnabled(not pi_unusable and not is_spk_script and not pi.has_expired() and \
-                                    pi.type not in [PaymentIdentifierType.LNURLP, PaymentIdentifierType.LNADDR])
+        send_en = not pi_unusable and amount_valid and not pi.has_expired()
+        save_en = not pi_unusable and not is_spk_script and not pi.has_expired() and \
+                  pi.type not in [PaymentIdentifierType.LNURLP, PaymentIdentifierType.LNADDR]
+        self.send_button.setEnabled(send_en)
+        self.save_button.setEnabled(save_en)
 
         self.invoice_error.setText(_('Expired') if pi.has_expired() else '')
 

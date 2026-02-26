@@ -1159,6 +1159,36 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         self.contact_list.refresh_all()
         self.channels_list.update_rows.emit(self.wallet)
 
+    def rebuild_form_tabs(self):
+        """Recreate form-based tabs (Send, Receive) so every widget is
+        redrawn from scratch.  This is used after a live theme switch so
+        that palette / ColorScheme changes are fully reflected, at the
+        cost of losing any in-progress form content."""
+        current_idx = self.tabs.currentIndex()
+
+        # --- Send tab ---
+        send_idx = self.tabs.indexOf(self.send_tab)
+        if send_idx != -1:
+            self.tabs.removeTab(send_idx)
+            old_send = self.send_tab
+            self.send_tab = self.create_send_tab()
+            self.tabs.insertTab(send_idx, self.send_tab,
+                                read_QIcon("tab_send.png"), _('Send'))
+            old_send.deleteLater()
+
+        # --- Receive tab ---
+        recv_idx = self.tabs.indexOf(self.receive_tab)
+        if recv_idx != -1:
+            self.tabs.removeTab(recv_idx)
+            old_recv = self.receive_tab
+            self.receive_tab = self.create_receive_tab()
+            self.tabs.insertTab(recv_idx, self.receive_tab,
+                                read_QIcon("tab_receive.png"), _('Receive'))
+            old_recv.deleteLater()
+
+        # Restore whichever tab was active
+        self.tabs.setCurrentIndex(current_idx)
+
     def create_channels_tab(self):
         self.channels_list = ChannelsList(self)
         tab = self.create_list_tab(self.channels_list)

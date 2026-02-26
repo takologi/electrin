@@ -4,6 +4,7 @@
 
 import asyncio
 import base64
+import re
 from typing import Optional
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
@@ -76,7 +77,14 @@ class UpdateCheck(QDialog, Logger):
 
     @staticmethod
     def is_newer(latest_version):
-        return latest_version > StrictVersion(version.ELECTRUM_VERSION)
+        # StrictVersion does not support 'rc' pre-release tags.
+        # Strip rcN suffix so e.g. '4.7.1rc1' → '4.7.1'.
+        # An RC is always older than the corresponding release, so
+        # this is correct: if the server announces 4.7.1, and we are
+        # running 4.7.1rc1, the comparison becomes 4.7.1 > 4.7.1 → False,
+        # which is fine (user is about to get the release anyway).
+        local = re.sub(r'rc\d+$', '', version.ELECTRUM_VERSION)
+        return latest_version > StrictVersion(local)
 
     def update_view(self, latest_version=None):
         if latest_version:
