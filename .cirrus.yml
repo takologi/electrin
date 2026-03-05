@@ -1,3 +1,19 @@
+# ─── Electrin CI ─────────────────────────────────────────────────────────
+# Forked from upstream Electrum Cirrus CI.
+#
+# NOTE: $ELECTRUM_* env var names are kept from upstream for compatibility
+# with the existing build scripts in contrib/.  Renaming them would require
+# updating every Dockerfile and shell script that references them.
+#
+# TODO [CI]: The following tasks need Rincoin-specific adaptation:
+#   • "Regtest functional tests" — currently installs bitcoind + electrumx;
+#     needs rincoind + Fulcrum-rin instead.
+#   • "locale: upload to crowdin" — references 'master' branch and upstream
+#     Crowdin project; adapt or disable for Electrin.
+#   • Build tasks (Windows, AppImage, Android) — need testing with Electrin
+#     branding (icons, metadata, package name).
+# ─────────────────────────────────────────────────────────────────────────
+
 # unittests using the 'latest' runtime python-dependencies
 task:
   container:
@@ -144,6 +160,11 @@ task:
     - "unittests: py3.10"
   only_if: $CIRRUS_BRANCH == 'master'
 
+# TODO [CI]: Regtest tests currently use bitcoind + electrumx (Bitcoin).
+# They need to be adapted for rincoind + Fulcrum-rin to test Rincoin regtest.
+# Disabled for now — uncomment and adapt when Rincoin regtest infra is ready.
+#task:
+#  name: "Regtest functional tests (DISABLED — needs Rincoin adaptation)"
 task:
   name: "Regtest functional tests"
   compute_engine_instance:
@@ -278,7 +299,7 @@ task:
   binaries_artifacts:
     path: "contrib/build-wine/dist/*"
   env:
-    CIRRUS_WORKING_DIR: /opt/wine64/drive_c/electrum
+    CIRRUS_WORKING_DIR: /opt/wine64/drive_c/electrum  # TODO [CI]: matches path in contrib/build-wine/Dockerfile; rename together
     CIRRUS_DOCKER_CONTEXT: contrib/build-wine
   depends_on:
     - "unittests: py3.10"

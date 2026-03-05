@@ -54,10 +54,30 @@ class ErrorConnectingServer(Exception):
 
 class LabelsPlugin(BasePlugin):
 
+    # ─── DISABLED ────────────────────────────────────────────────────────
+    # The labels-sync service at labels.electrum.org belongs to upstream
+    # Electrum and must NOT be used by Electrin.  The plugin is disabled
+    # until Electrin has its own labels-sync backend.
+    #
+    # TODO [LABELS-SYNC]: To re-enable this plugin:
+    #   1. Deploy an Electrin-owned labels-sync server (or a compatible
+    #      alternative like a self-hosted LabelSync instance).
+    #   2. Change `target_host` below to point to the new server.
+    #   3. Remove the `_LABELS_SYNC_DISABLED` guard from __init__().
+    #   4. Test push / pull round-trip with at least two wallets.
+    # ─────────────────────────────────────────────────────────────────────
+    _LABELS_SYNC_DISABLED = True
+
     def __init__(self, parent, config, name):
         BasePlugin.__init__(self, parent, config, name)
-        self.target_host = 'labels.electrum.org'
+        if self._LABELS_SYNC_DISABLED:
+            self.logger.info("Labels sync plugin is disabled — no Electrin labels server available yet.")
+            return  # skip all network setup; wallet hooks will silently no-op
+        self.target_host = 'labels.electrum.org'  # TODO: replace with Electrin server
         self.wallets = {}
+
+    def _is_disabled(self) -> bool:
+        return self._LABELS_SYNC_DISABLED or not hasattr(self, 'wallets')
 
     def encode(self, wallet: 'Abstract_Wallet', msg: str) -> str:
         password, iv, wallet_id = self.wallets[wallet]
@@ -85,6 +105,8 @@ class LabelsPlugin(BasePlugin):
 
     @hook
     def set_label(self, wallet: 'Abstract_Wallet', item, label):
+        if self._is_disabled():
+            return
         if wallet not in self.wallets:
             return
         if not item:
@@ -202,16 +224,22 @@ class LabelsPlugin(BasePlugin):
             self.logger.info(repr(e))
 
     def pull(self, wallet: 'Abstract_Wallet', force: bool):
+        if self._is_disabled():
+            raise Exception(_('Labels sync is disabled — no Electrin labels server available yet.'))
         if not wallet.network:
             raise Exception(_('You are offline.'))
         return asyncio.run_coroutine_threadsafe(self.pull_thread(wallet, force), wallet.network.asyncio_loop).result()
 
     def push(self, wallet: 'Abstract_Wallet'):
+        if self._is_disabled():
+            raise Exception(_('Labels sync is disabled — no Electrin labels server available yet.'))
         if not wallet.network:
             raise Exception(_('You are offline.'))
         return asyncio.run_coroutine_threadsafe(self.push_thread(wallet), wallet.network.asyncio_loop).result()
 
     def start_wallet(self, wallet: 'Abstract_Wallet'):
+        if self._is_disabled():
+            return
         if not wallet.network:
             return  # 'offline' mode
         mpk = wallet.get_fingerprint()
@@ -228,4 +256,6 @@ class LabelsPlugin(BasePlugin):
         asyncio.run_coroutine_threadsafe(self.pull_safe_thread(wallet, False), wallet.network.asyncio_loop)
 
     def stop_wallet(self, wallet):
+        if self._is_disabled():
+            return
         self.wallets.pop(wallet, None)

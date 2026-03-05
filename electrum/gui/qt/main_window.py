@@ -297,12 +297,27 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
 
         self.contacts.fetch_openalias(self.config)
 
+        # ── TESTING PHASE BANNER ──────────────────────────────────────
+        # Show a prominent warning on every launch.
+        # TODO: Remove this banner once Electrin leaves the testing phase.
+        self.show_warning(
+            "<h2>⚠ TESTING PHASE</h2>"
+            "<p><b>Electrin is currently in a testing phase.</b></p>"
+            "<p>We <b>strongly recommend NOT using this wallet</b> for anything "
+            "other than testing with <b>small amounts</b> of Rincoin.</p>"
+            "<p>There may be undiscovered bugs that could lead to loss of funds. "
+            "Use at your own risk.</p>",
+            title="Electrin — Testing Phase Warning"
+        )
+        # ──────────────────────────────────────────────────────────────
+
         # If the option hasn't been set yet
+        # TODO [SECURITY] — Update check is DISABLED during testing phase.
+        #   The upstream Electrum update infrastructure does not apply to Electrin.
+        #   Before production release, deploy Electrin-specific update checking
+        #   (see electrum/gui/qt/update_checker.py for the full checklist).
         if not config.cv.AUTOMATIC_CENTRALIZED_UPDATE_CHECKS.is_set():
-            choice = self.question(title="Electrin - " + _("Enable update check"),
-                                   msg=_("For security reasons we advise that you always use the latest version of Electrin.") + " " +
-                                       _("Would you like to be notified when there is a newer version of Electrin available?"))
-            config.AUTOMATIC_CENTRALIZED_UPDATE_CHECKS = bool(choice)
+            config.AUTOMATIC_CENTRALIZED_UPDATE_CHECKS = False  # disabled by default during testing
 
         self._update_check_thread = None
         if config.AUTOMATIC_CENTRALIZED_UPDATE_CHECKS:
@@ -651,8 +666,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         if self.wallet.is_watching_only():
             msg = ' '.join([
                 _("This wallet is watching-only."),
-                _("This means you will not be able to spend Bitcoins with it."),
-                _("Make sure you own the seed phrase or the private keys, before you request Bitcoins to be sent to this wallet.")
+                _("This means you will not be able to spend Rincoins with it."),
+                _("Make sure you own the seed phrase or the private keys, before you request Rincoins to be sent to this wallet.")
             ])
             self.show_warning(msg, title=_('Watch-only wallet'))
 
@@ -669,7 +684,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         msg = ''.join([
             _("You are in testnet mode."), ' ',
             _("Testnet coins are worthless."), '\n',
-            _("Testnet is separate from the main Bitcoin network. It is used for testing.")
+            _("Testnet is separate from the main Rincoin network. It is used for testing.")
         ])
         cb = QCheckBox(_("Don't show this again."))
         cb_checked = False
@@ -852,8 +867,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         self.help_menu.addAction(_("&Official website"), lambda: webopen("https://www.electrin.net"))
         self.help_menu.addSeparator()
         self.help_menu.addAction(_("&Documentation"), lambda: webopen("https://www.electrin.net/docs/")).setShortcut(QKeySequence.StandardKey.HelpContents)
-        if not constants.net.TESTNET:
-            self.help_menu.addAction(_("&Bitcoin Paper"), self.show_bitcoin_paper)
+        # Bitcoin Paper menu removed — the Satoshi whitepaper encoded in the
+        # Bitcoin blockchain is not retrievable from the Rincoin chain.
+        # TODO [BRANDING]: Consider adding a "Rincoin Whitepaper" link if one is published.
         self.help_menu.addAction(_("&Report Bug"), self.show_report_bug)
         self.help_menu.addSeparator()
         if self.network:
@@ -2198,7 +2214,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         address  = address.text().strip()
         message = message.toPlainText().strip()
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Bitcoin address.'))
+            self.show_message(_('Invalid Rincoin address.'))
             return
         if self.wallet.is_watching_only():
             self.show_message(_('This is a watching-only wallet.'))
@@ -2226,7 +2242,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         address  = address.text().strip()
         message = message.toPlainText().strip().encode('utf-8')
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Bitcoin address.'))
+            self.show_message(_('Invalid Rincoin address.'))
             return
         try:
             # This can throw on invalid base64

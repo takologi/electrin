@@ -126,7 +126,7 @@ Electrin from its root directory without installing it on your
 system; all the pure python dependencies are included in the 'packages'
 directory. To run Electrin from its root directory, just do:
 ```
-$ ./run_electrum
+$ ./run_electrin
 ```
 
 You can also install Electrin on your system, by running this command:
@@ -166,7 +166,7 @@ $ ./contrib/locale/build_locale.sh electrum/locale/locale electrum/locale/locale
 
 Finally, to start Electrin:
 ```
-$ ./run_electrum
+$ ./run_electrin
 ```
 
 ### Run tests
@@ -212,6 +212,61 @@ also welcome, but to avoid wasted effort, especially for larger changes,
 we encourage discussing these on the issue tracker first.
 
 Development discussion: [GitHub Issues](https://github.com/takologi/electrin/issues)
+
+
+---
+
+## TODO
+
+Consolidated list of open items tracked in code comments (`TODO [TAG]`).
+Each item references the source file(s) where the matching code comment lives.
+
+### Security & Infrastructure
+
+| Tag | Summary | Files |
+|-----|---------|-------|
+| `UPDATE-CHECK` | Re-enable update checking once Electrin has its own update server, signing keys and release signing process (5-step checklist in source). | `electrum/gui/qt/update_checker.py`, `electrum/gui/qt/main_window.py` |
+| `SECURITY` | Generate project GPG keys, publish fingerprints, update SECURITY.md table. | `SECURITY.md`, `electrum/gui/qt/update_checker.py` |
+| `CRASH-REPORTER` | Deploy crash-report endpoint on electrin.net, set `report_server`, test end-to-end. | `electrum/base_crash_reporter.py` |
+| `LABELS-SYNC` | Deploy an Electrin-owned labels-sync server, update `target_host`, remove disable guard. | `electrum/plugins/labels/labels.py` |
+
+### Chain & Wallet
+
+| Tag | Summary | Files |
+|-----|---------|-------|
+| `CHECKPOINTS` | Generate checkpoints.json from Rincoin Core RPC (`python3 contrib/generate_checkpoints.py`). Without checkpoints, a malicious server can serve a fabricated header chain. | `electrum/constants.py`, `contrib/generate_checkpoints.py` |
+| `SEED-PREFIX` | Decide whether to adopt unique seed prefixes before stable release to prevent cross-chain seed confusion with Electrum. | `electrum/version.py` |
+| `BIP44` | SLIP-0044 coin_type 9555 registration pending ([PR #1985](https://github.com/satoshilabs/slips/pull/1985)). | `electrum/constants.py` |
+
+### Branding
+
+| Tag | Summary | Files |
+|-----|---------|-------|
+| `BRANDING` | Remaining "Electrum" references in internal class names (`ElectrumWindow`, `ElectrumGui`, `QElectrumApplication`, `ElectrumItemDelegate`, `BaseElectrumGui`, `ElectrumTranslator`). Renaming these is RISKY — requires updating 100+ import sites, config keys, and plugin interfaces. Defer until a dedicated refactor. | `electrum/gui/qt/__init__.py`, `electrum/gui/qt/main_window.py`, `electrum/gui/qt/my_treeview.py` |
+| `BRANDING` | Consider adding a "Rincoin Whitepaper" link in Help menu (replaced Bitcoin Paper). | `electrum/gui/qt/main_window.py` |
+| `BRANDING` | `electrum/` package directory still named `electrum`. Renaming it would break every import in the codebase. Keep as-is; the `setup.py` `name="Electrin"` and entry script `electrin` handle user-facing naming. | `setup.py`, `electrum/` |
+
+### Build & CI
+
+| Tag | Summary | Files |
+|-----|---------|-------|
+| `CI` | Regtest tests need rincoind + Fulcrum-rin (currently use bitcoind + electrumx). | `.cirrus.yml` |
+| `CI` | Crowdin locale task references upstream project and `master` branch. | `.cirrus.yml` |
+| `CI` | Windows build `CIRRUS_WORKING_DIR` path matches upstream Dockerfile; rename together. | `.cirrus.yml`, `contrib/build-wine/Dockerfile` |
+| `CI` | Build tasks (Windows, AppImage, Android) need testing with Electrin branding. | `.cirrus.yml`, `contrib/` |
+
+### Exchange Rates
+
+| Tag | Summary | Files |
+|-----|---------|-------|
+| `EXCHANGE` | CoinPaprika integration added (free API, no key). Verify `rin-rincoin` coin ID once Rincoin is listed. | `electrum/exchange_rate.py` |
+| `EXCHANGE` | LiveCoinWatch integration added (requires `LIVECOINWATCH_API_KEY` env var). Verify `RIN` code once listed. | `electrum/exchange_rate.py` |
+
+### Server Diversity
+
+| Tag | Summary | Files |
+|-----|---------|-------|
+| `SERVERS` | Only 2 Fulcrum-rin servers, both under `rincoin.net`. A third is on the way. Goal: wider network of independent operators. | `electrum/chains/rincoin/servers.json` |
 
 
 ## Licence

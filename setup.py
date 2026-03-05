@@ -74,9 +74,14 @@ setup(
     scripts=['electrum/electrin'],
     data_files=data_files,
     description="Lightweight Rincoin Wallet",
-    author="Thomas Voegtlin",
-    author_email="thomasv@electrum.org",
+    author="Takologi",
+    author_email="takologi@proton.me",
     license="MIT Licence",
     url="https://github.com/takologi/electrin",
-    long_description="""Lightweight Rincoin Wallet""",
+    long_description=(
+        "Lightweight Rincoin Wallet.\n\n"
+        "Electrin is based on Electrum (https://electrum.org) by Thomas Voegtlin "
+        "and the Electrum developers. The original Electrum code is MIT-licensed; "
+        "Electrin modifies and extends it for the Rincoin blockchain."
+    ),
 )

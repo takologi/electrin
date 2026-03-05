@@ -1,6 +1,27 @@
 # Copyright (C) 2019 The Electrum developers
 # Distributed under the MIT software license, see the accompanying
 # file LICENCE or http://www.opensource.org/licenses/mit-license.php
+#
+# ──────────────────────────────────────────────────────────────────────
+# TODO [SECURITY] — Update checker is DISABLED during the testing phase.
+#
+# The upstream Electrum update checker fetches version info from
+# electrum.org and validates it against Bitcoin-mainnet signing keys.
+# Neither the URL nor the signing keys are applicable to Electrin.
+#
+# Before leaving the testing phase:
+#   1. Deploy a version-announcement endpoint on electrin.net (or the
+#      Electrin GitHub Releases API).
+#   2. Generate Rincoin-mainnet signing keys for version announcements
+#      (see SECURITY.md for the key-generation procedure).
+#   3. Replace `url`, `download_url`, and
+#      `VERSION_ANNOUNCEMENT_SIGNING_KEYS` below with the new values.
+#   4. Re-enable the update checker in this file and in main_window.py.
+#   5. Remove the DISABLED guard from `UpdateCheckThread.run()`.
+#
+# Until these steps are completed the update check will always report
+# "disabled" so that no data is sent to third-party servers.
+# ──────────────────────────────────────────────────────────────────────
 
 import asyncio
 import base64
@@ -19,19 +40,25 @@ from electrum.logging import Logger
 from electrum.network import Network
 from electrum._vendor.distutils.version import StrictVersion
 
+# TODO [SECURITY] — Replace with Electrin's own URLs and signing keys
+#                    before production release.
+_UPDATE_CHECK_DISABLED = True  # flip to False once Electrin infrastructure is ready
+
 
 class UpdateCheck(QDialog, Logger):
-    url = "https://electrum.org/version"
-    download_url = "https://electrum.org/#download"
+    url = "https://electrum.org/version"              # TODO: change to electrin.net endpoint
+    download_url = "https://electrum.org/#download"    # TODO: change to electrin.net download page
 
     VERSION_ANNOUNCEMENT_SIGNING_KEYS = (
-        "13xjmVAB1EATPP8RshTE8S8sNwwSUM9p1P",  # ThomasV (since 3.3.4)
-        "1Nxgk6NTooV4qZsX5fdqQwrLjYcsQZAfTg",  # ghost43 (since 4.1.2)
+        # TODO [SECURITY] — These are upstream Electrum Bitcoin-mainnet keys.
+        #   Replace with Electrin/Rincoin keys before enabling update checks.
+        "13xjmVAB1EATPP8RshTE8S8sNwwSUM9p1P",  # ThomasV (since 3.3.4)  — UPSTREAM, NOT OURS
+        "1Nxgk6NTooV4qZsX5fdqQwrLjYcsQZAfTg",  # ghost43 (since 4.1.2)  — UPSTREAM, NOT OURS
     )
 
     def __init__(self, *, latest_version=None):
         QDialog.__init__(self)
-        self.setWindowTitle('Electrum - ' + _('Update Check'))
+        self.setWindowTitle('Electrin - ' + _('Update Check'))
         self.content = QVBoxLayout()
         self.content.setContentsMargins(*[10]*4)
 
@@ -56,10 +83,19 @@ class UpdateCheck(QDialog, Logger):
 
         self.update_view(latest_version)
 
-        self.update_check_thread = UpdateCheckThread()
-        self.update_check_thread.checked.connect(self.on_version_retrieved)
-        self.update_check_thread.failed.connect(self.on_retrieval_failed)
-        self.update_check_thread.start()
+        if not _UPDATE_CHECK_DISABLED:
+            self.update_check_thread = UpdateCheckThread()
+            self.update_check_thread.checked.connect(self.on_version_retrieved)
+            self.update_check_thread.failed.connect(self.on_retrieval_failed)
+            self.update_check_thread.start()
+        else:
+            self.pb.hide()
+            self.heading_label.setText('<h2>' + _("Update check is disabled") + '</h2>')
+            self.detail_label.setText(
+                _("Automatic update checking is disabled during the testing phase.") + "<br><br>" +
+                _("Please check for updates manually at") + " " +
+                "<a href='https://github.com/takologi/electrin/releases'>GitHub Releases</a>."
+            )
 
         close_button = QPushButton(_("Close"))
         close_button.clicked.connect(self.close)
@@ -96,10 +132,10 @@ class UpdateCheck(QDialog, Logger):
                 self.detail_label.setText(_("You can download the new version from {}.").format(url))
             else:
                 self.heading_label.setText('<h2>' + _("Already up to date") + '</h2>')
-                self.detail_label.setText(_("You are already on the latest version of Electrum."))
+                self.detail_label.setText(_("You are already on the latest version of Electrin."))
         else:
             self.heading_label.setText('<h2>' + _("Checking for updates...") + '</h2>')
-            self.detail_label.setText(_("Please wait while Electrum checks for available updates."))
+            self.detail_label.setText(_("Please wait while Electrin checks for available updates."))
 
 
 class UpdateCheckThread(QThread, Logger):
@@ -143,6 +179,12 @@ class UpdateCheckThread(QThread, Logger):
                 return StrictVersion(version_num.strip())
 
     def run(self):
+        # TODO [SECURITY] — Update checker disabled during testing phase.
+        #   Do not contact electrum.org from Electrin. See module docstring.
+        if _UPDATE_CHECK_DISABLED:
+            self.logger.info("update check is disabled during testing phase")
+            self.failed.emit()
+            return
         if not self.network:
             self.failed.emit()
             return

@@ -52,6 +52,12 @@ class CrashReportResponse(NamedTuple):
 
 
 class BaseCrashReporter(Logger):
+    # TODO [CRASH-REPORTER]: Enable crash reporting once electrin.net is live.
+    # Steps:
+    #   1. Deploy a crash-report receiver endpoint on electrin.net (e.g. /crash.json).
+    #   2. Set report_server below to "https://www.electrin.net".
+    #   3. Verify the GENESIS check in send_report() includes Rincoin's genesis hash.
+    #   4. Test end-to-end: trigger_crash() → server receives report → GitHub issue created.
     report_server = ""  # no crash report server for Electrin
     issue_template = """<h2>Traceback</h2>
 <pre>

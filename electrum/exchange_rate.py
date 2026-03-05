@@ -569,6 +569,80 @@ class Walltime(ExchangeBase):
         return {'BRL': to_decimal(json['BRL_XBT']['last_inexact'])}
 
 
+# ---------------------------------------------------------------------------
+# Rincoin (RIN) exchange rate sources
+#
+# These exchanges query RIN prices directly (not BTC).
+# Currently only CoinPaprika and LiveCoinWatch list Rincoin.
+#
+# TODO: Add more Rincoin exchange rate providers as listings grow.
+# ---------------------------------------------------------------------------
+
+class CoinPaprika(ExchangeBase):
+    """CoinPaprika free API — no API key required for basic ticker data.
+
+    Endpoint: GET https://api.coinpaprika.com/v1/tickers/rin-rincoin
+    Returns RIN price in multiple fiat currencies.
+    """
+
+    async def get_rates(self, ccy):
+        json_data = await self.get_json(
+            'api.coinpaprika.com',
+            '/v1/tickers/rin-rincoin'
+        )
+        quotes = json_data.get('quotes', {})
+        result = {}
+        for fiat, data in quotes.items():
+            if data and 'price' in data and data['price'] is not None:
+                result[fiat] = to_decimal(data['price'])
+        return result
+
+    async def get_currencies(self):
+        json_data = await self.get_json(
+            'api.coinpaprika.com',
+            '/v1/tickers/rin-rincoin'
+        )
+        quotes = json_data.get('quotes', {})
+        return sorted([k for k in quotes.keys() if len(k) == 3])
+
+
+class LiveCoinWatch(ExchangeBase):
+    """LiveCoinWatch API — requires a free API key.
+
+    To use this exchange, set the LIVECOINWATCH_API_KEY environment variable,
+    or it will be skipped silently.
+
+    Endpoint: POST https://api.livecoinwatch.com/coins/single
+    """
+
+    async def get_rates(self, ccy):
+        import os
+        api_key = os.environ.get('LIVECOINWATCH_API_KEY', '')
+        if not api_key:
+            return {}
+        network = Network.get_instance()
+        proxy = network.proxy if network else None
+        url = 'https://api.livecoinwatch.com/coins/single'
+        headers = {
+            'content-type': 'application/json',
+            'x-api-key': api_key,
+        }
+        body = {
+            'currency': ccy.upper() if ccy else 'USD',
+            'code': 'RIN',
+            'meta': False,
+        }
+        async with make_aiohttp_session(proxy) as session:
+            async with session.post(url, json=body, headers=headers) as resp:
+                resp.raise_for_status()
+                data = await resp.json(content_type=None)
+        rate = data.get('rate')
+        if rate is not None:
+            target_ccy = ccy.upper() if ccy else 'USD'
+            return {target_ccy: to_decimal(rate)}
+        return {}
+
+
 def dictinvert(d):
     inv = {}
     for k, vlist in d.items():

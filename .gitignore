@@ -56,3 +56,4 @@ contrib/osx/*.dylib
 # Android build artifacts created in project root
 buildozer.spec
 main.py
+SECURITY.md.bak

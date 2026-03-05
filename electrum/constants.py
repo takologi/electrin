@@ -310,13 +310,14 @@ class RincoinMainnet(AbstractNet):
     }
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
 
-    # TODO(rincoin-bip44): Replace 9555 with the SLIP-0044 registered coin
-    # type once the PR at https://github.com/satoshilabs/slips is merged.
-    # 9555 is the Rincoin p2p port – a recognisable sentinel that makes
-    # unregistered derivation paths obvious in any wallet dump.
+    # TODO(rincoin-bip44): SLIP-0044 registration PR is pending:
+    #   https://github.com/satoshilabs/slips/pull/1985
+    # Replace 9555 with the officially assigned coin type once the PR is
+    # merged.  9555 is the Rincoin p2p port — a recognisable sentinel that
+    # makes unregistered derivation paths obvious in any wallet dump.
     # MUST be updated before any public release to avoid derivation-path
     # collisions with other coins.
-    BIP44_COIN_TYPE = 9555          # PENDING SLIP-0044 registration
+    BIP44_COIN_TYPE = 9555          # PENDING SLIP-0044 registration (PR #1985)
 
     # PoW verification parameters (used by electrum/blockchain.py)
     MAX_TARGET = 0x0000ffff00000000000000000000000000000000000000000000000000000000  # compact: 0x1f00ffff
@@ -326,6 +327,14 @@ class RincoinMainnet(AbstractNet):
     # and only check that RinHash(header) ≤ bits_to_target(bits).  This is the
     # correct SPV security model and is immune to future DA algorithm changes.
     SPV_SKIP_DA_BITS_CHECK = True
+
+    # TODO [SECURITY] — Checkpoints are currently EMPTY. Generate them with:
+    #   python3 contrib/generate_checkpoints.py \
+    #       --rpc-url http://user:pass@127.0.0.1:9555 \
+    #       --output electrum/chains/rincoin/checkpoints.json
+    # Without checkpoints, an attacker who controls the Electrum server can
+    # serve a fabricated header chain. Checkpoints pin the first N blocks
+    # and prevent header-chain replacement within that range.
 
     LN_REALM_BYTE = 0
     LN_DNS_SEEDS = []

@@ -99,7 +99,7 @@ class PluginDialog(WindowModalDialog):
         if not self.plugins.is_available(self.name):
             msg = "\n".join([
                 _('This plugin requires installation of additional dependencies.'),
-                _('For Electrum to recognize external packages, you need to run it from source.')
+                _('For Electrin to recognize external packages, you need to run it from source.')
             ])
             self.window.show_message(msg)
             return

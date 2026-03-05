@@ -1,4 +1,5 @@
 {
+    "_comment": "KNOWN LIMITATION: Only 2 servers, both under rincoin.net. A third server is on the way. The goal is to build a wider network of independent Fulcrum-rin nodes operated by different parties. This centralisation is a recognised threat during the testing phase — see README.md TODO section.",
     "peer1.rincoin.net": {
         "pruning": "-",
         "s": "50002",
