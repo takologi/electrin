@@ -109,7 +109,7 @@ class QEInvoice(QObject, QtEventListener):
 
     walletChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=walletChanged)
-    def wallet(self):
+    def wallet(self) -> QEWallet:
         return self._wallet
 
     @wallet.setter
@@ -152,7 +152,7 @@ class QEInvoice(QObject, QtEventListener):
         return self._amount
 
     @pyqtProperty(QVariant, notify=amountOverrideChanged)
-    def amountOverride(self):
+    def amountOverride(self) -> QEAmount:
         return self._amountOverride
 
     @amountOverride.setter

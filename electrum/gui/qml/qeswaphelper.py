@@ -205,7 +205,7 @@ class QESwapHelper(AuthMixin, QObject, QtEventListener):
 
     walletChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=walletChanged)
-    def wallet(self):
+    def wallet(self) -> QEWallet:
         return self._wallet
 
     @wallet.setter
@@ -295,11 +295,11 @@ class QESwapHelper(AuthMixin, QObject, QtEventListener):
 
     tosendChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=tosendChanged)
-    def tosend(self):
+    def tosend(self) -> QEAmount:
         return self._tosend
 
     @tosend.setter
-    def tosend(self, tosend):
+    def tosend(self, tosend: QEAmount):
         assert tosend is None or isinstance(tosend, QEAmount)
         if self._tosend != tosend:
             self._tosend = tosend
@@ -307,11 +307,11 @@ class QESwapHelper(AuthMixin, QObject, QtEventListener):
 
     toreceiveChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=toreceiveChanged)
-    def toreceive(self):
+    def toreceive(self) -> QEAmount:
         return self._toreceive
 
     @toreceive.setter
-    def toreceive(self, toreceive):
+    def toreceive(self, toreceive: QEAmount):
         assert toreceive is None or isinstance(toreceive, QEAmount)
         if self._toreceive != toreceive:
             self._toreceive = toreceive
@@ -319,11 +319,11 @@ class QESwapHelper(AuthMixin, QObject, QtEventListener):
 
     serverMiningfeeChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=serverMiningfeeChanged)
-    def serverMiningfee(self):
+    def serverMiningfee(self) -> QEAmount:
         return self._server_miningfee
 
     @serverMiningfee.setter
-    def serverMiningfee(self, server_miningfee):
+    def serverMiningfee(self, server_miningfee: QEAmount):
         assert server_miningfee is None or isinstance(server_miningfee, QEAmount)
         if self._server_miningfee != server_miningfee:
             self._server_miningfee = server_miningfee
@@ -342,11 +342,11 @@ class QESwapHelper(AuthMixin, QObject, QtEventListener):
 
     miningfeeChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=miningfeeChanged)
-    def miningfee(self):
+    def miningfee(self) -> QEAmount:
         return self._miningfee
 
     @miningfee.setter
-    def miningfee(self, miningfee):
+    def miningfee(self, miningfee: QEAmount):
         assert miningfee is None or isinstance(miningfee, QEAmount)
         if self._miningfee != miningfee:
             self._miningfee = miningfee

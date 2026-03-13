@@ -67,7 +67,7 @@ class FeeSlider(QObject):
 
     walletChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=walletChanged)
-    def wallet(self):
+    def wallet(self) -> QEWallet:
         return self._wallet
 
     @wallet.setter
@@ -170,11 +170,11 @@ class TxFeeSlider(FeeSlider):
 
     feeChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=feeChanged)
-    def fee(self):
+    def fee(self) -> QEAmount:
         return self._fee
 
     @fee.setter
-    def fee(self, fee):
+    def fee(self, fee: QEAmount):
         assert fee is None or isinstance(fee, QEAmount)
         if self._fee != fee:
             self._fee.copyFrom(fee)
@@ -420,7 +420,7 @@ class QETxFinalizer(TxFeeSlider):
 
     amountChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=amountChanged)
-    def amount(self):
+    def amount(self) -> QEAmount:
         return self._amount
 
     @amount.setter
@@ -438,7 +438,7 @@ class QETxFinalizer(TxFeeSlider):
 
     extraFeeChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=extraFeeChanged)
-    def extraFee(self):
+    def extraFee(self) -> QEAmount:
         return self._extraFee
 
     @extraFee.setter
@@ -669,7 +669,7 @@ class QETxRbfFeeBumper(TxFeeSlider, TxMonMixin):
 
     oldfeeChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=oldfeeChanged)
-    def oldfee(self):
+    def oldfee(self) -> QEAmount:
         return self._oldfee
 
     @oldfee.setter
@@ -803,7 +803,7 @@ class QETxCanceller(TxFeeSlider, TxMonMixin):
 
     oldfeeChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=oldfeeChanged)
-    def oldfee(self):
+    def oldfee(self) -> QEAmount:
         return self._oldfee
 
     @oldfee.setter
@@ -930,7 +930,7 @@ class QETxCpfpFeeBumper(TxFeeSlider, TxMonMixin):
 
     totalFeeChanged = pyqtSignal()
     @pyqtProperty(QVariant, notify=totalFeeChanged)
-    def totalFee(self):
+    def totalFee(self) -> QEAmount:
         return self._total_fee
 
     @totalFee.setter
