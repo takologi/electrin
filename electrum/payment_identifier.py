@@ -46,8 +46,8 @@ def remove_uri_prefix(data: str, *, prefix: str) -> str:
 
 
 RE_ALIAS = r'(.*?)\s*\<([0-9A-Za-z]{1,})\>'
-RE_EMAIL = r'\b[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[A-Z|a-z]{2,7}\b'
-RE_DOMAIN = r'\b([A-Za-z0-9-]+\.)+[A-Z|a-z]{2,7}\b'
+RE_EMAIL = r'\b[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,7}\b'
+RE_DOMAIN = r'\b([A-Za-z0-9-]+\.)+[A-Za-z]{2,7}\b'
 RE_SCRIPT_FN = r'script\((.*)\)'
 
 
