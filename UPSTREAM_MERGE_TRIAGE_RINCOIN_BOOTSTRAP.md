@@ -23,25 +23,25 @@ Scope: commit-by-commit triage for `origin/rincoin-bootstrap..upstream/master` u
 
 ## Summary counts
 - Merge commits: 94
-- Lightning core: 69
+- Lightning core: 64
 - Qt GUI / QML: 49
-- Wallet/core non-LN: 39
-- Build / CI / packaging: 35
-- Tests only: 28
-- Security / RPC hardening: 20
+- Wallet/core non-LN: 38
+- Build / CI / packaging: 33
+- Tests only: 32
+- Security / RPC hardening: 17
 - NWC plugin: 13
-- Chain data / servers: 2
-- Docs / release notes: 2
+- Docs / release notes: 8
+- Chain data / servers: 3
 
 Importance/Effort matrix:
 - mandatory + difficult: 4
-- mandatory + easy: 3
-- mandatory + moderate: 22
-- not relevant + easy: 3
+- mandatory + easy: 1
+- mandatory + moderate: 19
+- not relevant + easy: 10
 - not relevant + moderate: 1
-- optional + difficult: 87
-- optional + easy: 134
-- optional + moderate: 97
+- optional + difficult: 85
+- optional + easy: 139
+- optional + moderate: 92
 
 ## Actionable merge plan (ordered waves)
 1. **Wave 1 (mandatory, low/medium effort)**: cherry-pick security/RPC hardening and mandatory NWC fixes.
@@ -67,7 +67,7 @@ Importance/Effort matrix:
 | `49f1eff1` | Merge pull request #10490 from f321x/locale_llm_proofreader_cleanup | Merge commits | optional | easy | high | skip |
 | `6de3fef7` | (trivial) consistent whitespaces in .gitmodules | Wallet/core non-LN | optional | moderate | high | cherry-pick |
 | `3afa2fcd` | locale: gui: show translation completion percentage in language names | Qt GUI / QML | optional | difficult | high | skip |
-| `4d2ea4f2` | update locale | Wallet/core non-LN | optional | moderate | high | cherry-pick |
+| `4d2ea4f2` | update locale | Chain data / servers | not relevant | easy | high | skip |
 | `9a71382c` | Merge pull request #10479 from SomberNight/202602_locale_fancy_names | Merge commits | optional | easy | high | skip |
 | `ddb01f53` | lnpeer: don't save our own channel update as remote upd | Lightning core | optional | moderate | high | manual-port |
 | `2df68d92` | qt: console: allow changing font size | Qt GUI / QML | optional | difficult | high | skip |
@@ -140,7 +140,7 @@ Importance/Effort matrix:
 | `8c5af52c` | test_checksum_non_ascii | Tests only | optional | easy | high | cherry-pick |
 | `907ceb9f` | tests: timelock_recovery plugin: add test vector for checksum from bip | Tests only | optional | easy | high | cherry-pick |
 | `c2f37294` | plugins: timelock_recovery: move checksum func to base class | Wallet/core non-LN | optional | moderate | high | cherry-pick |
-| `e4ad44c0` | Merge branch '202603_timelock_recovery_plugin_checksum': fix checksum calc | Tests only | optional | easy | high | cherry-pick |
+| `e4ad44c0` | Merge branch '202603_timelock_recovery_plugin_checksum': fix checksum calc | Docs / release notes | not relevant | easy | high | skip |
 | `b397ddb0` | tests: move revealer and timelock_recovery stuff to tests/plugins/ | Tests only | optional | moderate | high | cherry-pick |
 | `d6ec34a8` | Merge pull request #10527 from SomberNight/202603_tests_plugins | Merge commits | optional | easy | high | skip |
 | `ffd25928` | qt: SwapServerDialog: resize server list with dialog | Qt GUI / QML | optional | difficult | high | skip |
@@ -175,7 +175,7 @@ Importance/Effort matrix:
 | `37159e47` | qml: 2fa: make it possible to copy 2fa secret | Wallet/core non-LN | optional | difficult | high | manual-port |
 | `cb023e22` | qml: 2fa: make 2fa setup qr code clickable | Qt GUI / QML | optional | difficult | high | skip |
 | `0dcef978` | daemon: forbid "setconfig" command to change rpcserver settings in-flight | Security / RPC hardening | mandatory | moderate | high | cherry-pick |
-| `06e9f2b5` | Merge pull request #10534 from SomberNight/202603_rpc_password_not_empty | Merge commits | mandatory | easy | high | skip |
+| `06e9f2b5` | Merge pull request #10534 from SomberNight/202603_rpc_password_not_empty | Merge commits | optional | easy | high | skip |
 | `efb3e344` | Merge pull request #10543 from f321x/qml_trustedcoin | Merge commits | optional | easy | high | skip |
 | `3012c367` | Qt: move LN fee slider to payment dialog. fixes #10516 | Qt GUI / QML | optional | difficult | high | skip |
 | `06490657` | fix: remove negative fee assert from get_tx_fee_warning | Wallet/core non-LN | optional | difficult | high | manual-port |
@@ -186,7 +186,7 @@ Importance/Effort matrix:
 | `726d3995` | qt gui: more defensive 'gui' RPC (i.e. URI) handling | Security / RPC hardening | mandatory | difficult | high | manual-port |
 | `0265c707` | LNWallet: only include tramp r_tags if tramp feature | Lightning core | optional | moderate | high | manual-port |
 | `609a2746` | LNWallet: set trampoline invoice feature independently | Lightning core | optional | difficult | high | manual-port |
-| `ac87eea0` | test_lnwallet: unittest trampoline invoice_feature and r_tag | Lightning core | optional | difficult | high | manual-port |
+| `ac87eea0` | test_lnwallet: unittest trampoline invoice_feature and r_tag | Tests only | optional | easy | high | cherry-pick |
 | `9d50d78e` | Merge pull request #10541 from f321x/trampoline_feature_invoice | Merge commits | optional | easy | high | skip |
 | `297aed99` | lnpeer: check just-in-time channel opening fee | Lightning core | optional | moderate | high | manual-port |
 | `1f17574d` | lnchannel: fix update_unfunded_state, add unittest | Lightning core | optional | moderate | high | manual-port |
@@ -215,12 +215,12 @@ Importance/Effort matrix:
 | `7755d97a` | set restrictive unix umask application-wide by default | Security / RPC hardening | mandatory | moderate | high | cherry-pick |
 | `efcf1f05` | Merge pull request #10547 from SomberNight/202603_umask | Merge commits | optional | easy | high | skip |
 | `8942ceac` | Merge pull request #10558 from f321x/followup_10541 | Merge commits | optional | easy | high | skip |
-| `09a09057` | Merge pull request #10548 from SomberNight/202603_lockdown_rpcserver | Merge commits | mandatory | easy | high | skip |
+| `09a09057` | Merge pull request #10548 from SomberNight/202603_lockdown_rpcserver | Merge commits | optional | easy | high | skip |
 | `65fb7395` | segwit_addr: bech32 decode without checksum option | Wallet/core non-LN | optional | moderate | high | cherry-pick |
 | `b7a51284` | onion_message: factor out get_blinded_paths_to_me from get_blinded_reply_paths. the former also calculates payinfo information for payment scenarios. include payment_relay struct for payment blinded_paths. | Lightning core | optional | moderate | high | manual-port |
-| `8d4affa2` | test_onion_message: test get_blinded_paths_to_me | Lightning core | optional | moderate | high | manual-port |
-| `5c4fc2d7` | onion_message: verify LNPeerAddr returned as hint in NoRouteFound | Lightning core | optional | moderate | high | manual-port |
-| `2b6ad681` | tests: test_onion_message: mock LNWallet._add_peer | Lightning core | optional | moderate | high | manual-port |
+| `8d4affa2` | test_onion_message: test get_blinded_paths_to_me | Tests only | optional | easy | high | cherry-pick |
+| `5c4fc2d7` | onion_message: verify LNPeerAddr returned as hint in NoRouteFound | Tests only | optional | easy | high | cherry-pick |
+| `2b6ad681` | tests: test_onion_message: mock LNWallet._add_peer | Tests only | optional | easy | high | cherry-pick |
 | `3e3bffa4` | onion_message: let caller specify considered channels for blinded paths. This allows restricting blinded paths to channels that have sufficient receive capacity for payment. | Lightning core | optional | moderate | high | manual-port |
 | `9bcbbdd3` | move blinding_privkey from onion_message to lnonion | Lightning core | optional | moderate | high | manual-port |
 | `2e0f2632` | onion_message: iterate blinded paths for onion message requests | Lightning core | optional | moderate | high | manual-port |
@@ -284,7 +284,7 @@ Importance/Effort matrix:
 | `29b5e167` | p4a ref 1098be6964cfc2156959e435e81c2c50f8398586 | Build / CI / packaging | optional | easy | high | manual-port |
 | `83b67700` | android: remove unneeded dl-ndk-ci.sh | Build / CI / packaging | optional | difficult | high | manual-port |
 | `8e49eb80` | appimage: update Dockerfile dependencies | Build / CI / packaging | optional | easy | high | manual-port |
-| `36e9f185` | regtest: make fw_fail_htlc less flaky | Lightning core | optional | moderate | high | manual-port |
+| `36e9f185` | regtest: make fw_fail_htlc less flaky | Tests only | optional | easy | high | cherry-pick |
 | `46eadbf4` | lnpeer: channel_reestablish: further restrict states for msg handler | Lightning core | optional | moderate | high | manual-port |
 | `14f20294` | regtest: increase timeouts 30s -> 120s | Tests only | optional | easy | high | cherry-pick |
 | `230e6275` | Merge pull request #10600 from SomberNight/202604_lnpeer_chan_reest | Merge commits | optional | easy | high | skip |
@@ -302,7 +302,7 @@ Importance/Effort matrix:
 | `b9dc6aa3` | Merge pull request #10591 from SomberNight/202604_fix_wallet_mktx_base_tx | Merge commits | optional | easy | high | skip |
 | `1096ebcd` | build: update pinned ledger-bitcoin (partial rerun freeze_packages) | Build / CI / packaging | optional | easy | high | manual-port |
 | `c8c44e35` | qt: send start_new_window exc to reporter | Qt GUI / QML | optional | difficult | high | skip |
-| `5af40f43` | Merge branch '202604_pr10603_ledger' | Tests only | optional | easy | high | cherry-pick |
+| `5af40f43` | Merge branch '202604_pr10603_ledger' | Docs / release notes | not relevant | easy | high | skip |
 | `ca212da7` | Merge pull request #10605 from f321x/crash_reporter_start_new_window | Merge commits | optional | easy | high | skip |
 | `6933faee` | trampoline: handle edges with known fees in allocation | Lightning core | optional | difficult | high | manual-port |
 | `06fd0889` | test_lnrouter: add unittests for tramp fee allocation | Tests only | optional | easy | high | cherry-pick |
@@ -327,9 +327,9 @@ Importance/Effort matrix:
 | `b776daca` | Merge pull request #10613 from SomberNight/202604_crash_report_altcoin | Merge commits | optional | easy | high | skip |
 | `c964fdef` | Merge pull request #10544 from spesmilo/lazy_trampoline | Merge commits | optional | easy | high | skip |
 | `3399c20a` | commands: export_lightning_preimage: add comment about wallet password | Security / RPC hardening | mandatory | moderate | high | cherry-pick |
-| `bd5ac019` | release notes: 4.7.2: add links to security disclosures | Security / RPC hardening | mandatory | moderate | high | cherry-pick |
-| `a271e2f1` | SECURITY.md: enable "private vuln reports" on GitHub | Security / RPC hardening | mandatory | moderate | high | cherry-pick |
-| `5122ad10` | Merge pull request #10616 from SomberNight/202604_security_md | Merge commits | mandatory | easy | high | skip |
+| `bd5ac019` | release notes: 4.7.2: add links to security disclosures | Docs / release notes | not relevant | easy | high | skip |
+| `a271e2f1` | SECURITY.md: enable "private vuln reports" on GitHub | Docs / release notes | not relevant | easy | high | skip |
+| `5122ad10` | Merge pull request #10616 from SomberNight/202604_security_md | Merge commits | optional | easy | high | skip |
 | `e1153265` | qml: QERequestDetails: handle _wallet = None in callback | Qt GUI / QML | optional | difficult | high | skip |
 | `52d00688` | Merge pull request #10618 from f321x/fix_10617 | Merge commits | optional | easy | high | skip |
 | `5a5c1e1f` | commands: add list_channel_htlcs command to list failed, inflight and settled HTLCs for a channel | Security / RPC hardening | mandatory | moderate | high | cherry-pick |
@@ -352,7 +352,7 @@ Importance/Effort matrix:
 | `d8159dfc` | tests: interface: split ToyServer from ToyServerSession | Tests only | optional | easy | high | cherry-pick |
 | `4043d84f` | tests: split out toy_server from test_interface.py | Tests only | optional | easy | high | cherry-pick |
 | `2cb11800` | tests: toy_server: move start/stop logic | Tests only | optional | easy | high | cherry-pick |
-| `86ca70d9` | tests/toyserver: track UTXOs, and forbid conflicts | Security / RPC hardening | mandatory | moderate | high | cherry-pick |
+| `86ca70d9` | tests/toyserver: track UTXOs, and forbid conflicts | Tests only | mandatory | easy | high | cherry-pick |
 | `0811f3d7` | tests: toyserver: add faucet | Tests only | optional | easy | high | cherry-pick |
 | `62a03ff5` | tests: toyserver: add basic remove_tx/reorg functionality | Wallet/core non-LN | optional | difficult | high | manual-port |
 | `be9b4cbb` | tests: toyserver: extend remove_tx to subgraph of transitive children | Tests only | optional | easy | high | cherry-pick |
@@ -373,7 +373,7 @@ Importance/Effort matrix:
 | `da53b4eb` | qml: fix userinfo race in Invoice view | Qt GUI / QML | optional | difficult | high | skip |
 | `0505ef59` | qewallet: replace some threads with coroutines | Qt GUI / QML | optional | moderate | high | skip |
 | `37b6fe3d` | lnonion: factor out next_blinding_from_shared_secret | Lightning core | optional | moderate | high | manual-port |
-| `9aef60e3` | contrib/android/Readme.md: mention build cache | Build / CI / packaging | optional | difficult | high | manual-port |
+| `9aef60e3` | contrib/android/Readme.md: mention build cache | Docs / release notes | not relevant | easy | high | skip |
 | `cbe97a8c` | lnworker: fix _get_next_peers_to_try regression | Lightning core | optional | moderate | high | manual-port |
 | `b15be1fa` | wallet: encrypt the keystore before adding it to db | Wallet/core non-LN | optional | moderate | high | cherry-pick |
 | `2de7f4aa` | Merge pull request #10632 from f321x/next_blinding_func | Merge commits | optional | easy | high | skip |
@@ -389,7 +389,7 @@ Importance/Effort matrix:
 | `bed768e5` | qml: InvoiceDialog: rename "Remote Pubkey" -> "Recipient Pubkey" | Qt GUI / QML | optional | difficult | high | skip |
 | `5003939e` | Merge pull request #10642 from f321x/remote_pubkey | Merge commits | optional | easy | high | skip |
 | `0c52a01a` | ci: code review: pass commit messages into prompt context | Build / CI / packaging | optional | easy | high | manual-port |
-| `6eba49b6` | ci: code review: extend prompt to verify commit message intent | Build / CI / packaging | optional | easy | high | manual-port |
+| `6eba49b6` | ci: code review: extend prompt to verify commit message intent | Docs / release notes | not relevant | easy | high | skip |
 | `828766db` | Merge pull request #10643 from f321x/ci_code_review_move | Merge commits | optional | easy | high | skip |
 | `d0860ed7` | Move StoredDict class into new 'stored_dict' module | Lightning core | optional | difficult | high | manual-port |
 | `e0fd4d83` | Merge pull request #10644 from spesmilo/move_stored_dict | Merge commits | optional | easy | high | skip |
