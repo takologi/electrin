@@ -1492,7 +1492,6 @@ def convert_raw_tx_to_hex(raw: Union[str, bytes]) -> str:
     raw tx hex string."""
     if not raw:
         raise ValueError("empty string")
-    raw_unstripped = raw
     # try hex
     try:
         return binascii.unhexlify(raw).hex()
@@ -1518,18 +1517,17 @@ def convert_raw_tx_to_hex(raw: Union[str, bytes]) -> str:
         return base_decode(raw, base=43).hex()
     except Exception:
         pass
-    # raw bytes (do not strip whitespaces in this case)
-    if isinstance(raw, bytearray):
-        raw = bytes(raw)
-    if isinstance(raw_unstripped, bytes):
-        return raw_unstripped.hex()
+    # raw bytes
+    if isinstance(raw, (bytes, bytearray)):
+        return raw.hex()
     raise ValueError(f"failed to recognize transaction encoding for txt: {raw[:30]}...")
 
 
 def tx_from_any(
         raw: Union[str, bytes], *,
         deserialize: bool = True,
-        sanitize: bool = True) -> Union['PartialTransaction', 'Transaction']:
+        sanitize: bool = True,
+) -> Union['PartialTransaction', 'Transaction']:
     # re.sub is expensive, set sanitize to False if raw data is not from user input
     if isinstance(raw, str) and sanitize:
         # remove all whitespace characters, anywhere, for convenience
