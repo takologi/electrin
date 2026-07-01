@@ -40,6 +40,20 @@ WizardComponent {
             qrdata: encodeURI('otpauth://totp/Electrum 2FA ' + wizard_data['wallet_name']
                     + '?secret=' + plugin.otpSecret + '&digits=6')
             render: plugin.otpSecret
+            onClicked: {
+                if (plugin.otpSecret) {
+                    AppController.textToClipboard(plugin.otpSecret)
+                    toaster.show(this, qsTr('Copied!'))
+                    // On Android the app will get killed when switching to the authenticator app,
+                    // losing the wizard state. TODO: re-enable once we have means to keep app alive in background.
+                    // if (AppController.isAndroid()) {
+                    //     Qt.openUrlExternally(qrdata)
+                    // } else {
+                    //     AppController.textToClipboard(plugin.otpSecret)
+                    //     toaster.show(this, qsTr('Copied!'))
+                    // }
+                }
+            }
         }
 
         TextHighlightPane {
