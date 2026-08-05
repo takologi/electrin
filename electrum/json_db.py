@@ -25,7 +25,7 @@
 import threading
 import copy
 import json
-from typing import TYPE_CHECKING, Optional, Sequence, List, Union, Any
+from typing import TYPE_CHECKING, Optional, Sequence, List, Union, Dict, Any
 
 import jsonpatch
 import jsonpointer
