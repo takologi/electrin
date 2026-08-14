@@ -25,9 +25,6 @@ class Plugin(TrustedCoinPlugin):
         self._app = None  # type: ElectrumQmlApplication
         self.wallet = None  # type: Wallet_2fa
         self.so = None  # type: TrustedcoinPluginQObject
-        self.on_success = None  # type: Callable
-        self.on_failure = None  # type: Callable
-        self.tx = None  # type: PartialTransaction
 
     @hook
     def load_wallet(self, wallet: 'Abstract_Wallet'):
