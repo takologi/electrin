@@ -1,11 +1,14 @@
 #!/usr/bin/python3
-# For usage in shell, to get the version of electrum, without needing electrum installed.
+# For usage in shell, to get the version of Electrin, without needing electrum installed.
 # usage: ./print_electrum_version.py [<attr_name>]
 #
 # For example:
 # $ VERSION=$("$CONTRIB"/print_electrum_version.py)
 # instead of
-# $ VERSION=$(python3 -c "import electrum; print(electrum.version.ELECTRUM_VERSION)")
+# $ VERSION=$(python3 -c "import electrum; print(electrum.version.ELECTRIN_VERSION)")
+#
+# Pass ELECTRUM_VERSION explicitly to get the upstream-tracking version instead:
+# $ ./print_electrum_version.py ELECTRUM_VERSION
 
 import importlib.util
 import os
@@ -16,7 +19,7 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2:
         attr_name = sys.argv[1]
     else:
-        attr_name = "ELECTRUM_VERSION"
+        attr_name = "ELECTRIN_VERSION"
 
     project_root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     version_file_path = os.path.join(project_root, "electrum", "version.py")

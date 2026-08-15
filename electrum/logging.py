@@ -331,9 +331,9 @@ def configure_logging(config: 'SimpleConfig', *, log_to_file: Optional[bool] = N
         root_logger.removeHandler(_inmemory_startup_logs)
         _inmemory_startup_logs = None
 
-    from . import ELECTRUM_VERSION
+    from . import ELECTRIN_VERSION, ELECTRUM_VERSION
     from .constants import GIT_REPO_URL
-    _logger.info(f"Electrin version: {ELECTRUM_VERSION} - {GIT_REPO_URL}")
+    _logger.info(f"Electrin version: {ELECTRIN_VERSION} (upstream base: {ELECTRUM_VERSION}) - {GIT_REPO_URL}")
     _logger.info(f"Python version: {sys.version}. On platform: {describe_os_version()}")
     _logger.info(f"Logging to file: {str(_logfile_path)}")
     _logger.info(f"Log filters: verbosity {repr(verbosity)}")

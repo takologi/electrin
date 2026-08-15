@@ -699,7 +699,7 @@ class Plugin(TimelockRecoveryPlugin):
                     "created_at": context.recovery_plan_created_at.isoformat(),
                     "plugin_version": self.plugin_version,
                     "wallet_kind": "Electrin",
-                    "wallet_version": version.ELECTRUM_VERSION,
+                    "wallet_version": version.ELECTRIN_VERSION,
                     "wallet_name": context.wallet_name,
                     "timelock_days": context.timelock_days,
                     "anchor_amount_sats": context.ANCHOR_OUTPUT_AMOUNT_SATS,
@@ -743,7 +743,7 @@ class Plugin(TimelockRecoveryPlugin):
                     "created_at": context.recovery_plan_created_at.isoformat(),
                     "plugin_version": self.plugin_version,
                     "wallet_kind": "Electrin",
-                    "wallet_version": version.ELECTRUM_VERSION,
+                    "wallet_version": version.ELECTRIN_VERSION,
                     "wallet_name": context.wallet_name,
                     "timelock_days": context.timelock_days,
                     "alert_txid": context.alert_tx.txid(),
@@ -851,7 +851,7 @@ class Plugin(TimelockRecoveryPlugin):
         painter.setFont(font_manager.subtitle_font)
         painter.drawText(
             QRectF(0, current_height, page_width, font_manager.subtitle_line_spacing + 20), Qt.AlignmentFlag.AlignCenter,
-            f"Electrin Version: {version.ELECTRUM_VERSION} - Plugin Version: {self.plugin_version}"
+            f"Electrin Version: {version.ELECTRIN_VERSION} - Plugin Version: {self.plugin_version}"
         )
         current_height += font_manager.subtitle_line_spacing + 60
 
@@ -1222,7 +1222,7 @@ class Plugin(TimelockRecoveryPlugin):
         painter.setFont(font_manager.subtitle_font)
         painter.drawText(
             QRectF(0, current_height, page_width, font_manager.subtitle_line_spacing + 20), Qt.AlignmentFlag.AlignCenter,
-            f"Electrin Version: {version.ELECTRUM_VERSION} - Plugin Version: {self.plugin_version}"
+            f"Electrin Version: {version.ELECTRIN_VERSION} - Plugin Version: {self.plugin_version}"
         )
         current_height += font_manager.subtitle_line_spacing + 60
 

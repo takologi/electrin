@@ -13,26 +13,27 @@ ARCH_DICT = {
 }
 
 
-def get_electrum_version() -> str:
+def get_electrin_version() -> str:
     project_root = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
     version_file_path = os.path.join(project_root, "electrum", "version.py")
     # load version.py; needlessly complicated alternative to "imp.load_source":
     version_spec = importlib.util.spec_from_file_location('version', version_file_path)
     version_module = version = importlib.util.module_from_spec(version_spec)
     version_spec.loader.exec_module(version_module)
-    return version.ELECTRUM_VERSION
+    return version.ELECTRIN_VERSION
 
 
 def get_android_versioncode(*, arch_name: str) -> int:
     version_code = 0
-    # add ELECTRUM_VERSION
-    app_version = get_electrum_version()
-    # if alpha/beta/rc, and not stable: strip out alpha/beta/rc part from last component.
+    # add ELECTRIN_VERSION
+    app_version = get_electrin_version()
+    # if alpha/beta/rc, and not stable: strip out the "-alpha.N"/"-beta.N"/"-rc.N"
+    # pre-release suffix from the last component (e.g. '1.0.0-beta.1' -> '1.0.0').
     # NOTE: we REUSE the version_code int between alphas/betas/rcs and the final stable.
     #       This is not allowed on Google Play or F-Droid.
     #       This means we MUST NOT upload alphas/betas/rcs there.
     import re
-    m = re.search(r'(a|b|rc)\d*', app_version)
+    m = re.search(r'-(alpha|beta|rc)\.?\d*$', app_version)
     if m:
         app_version = app_version[:m.start()]
     # now the app_version str must contain exactly three dot-delimited components

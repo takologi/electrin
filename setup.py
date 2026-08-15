@@ -57,7 +57,7 @@ extras_require['fast'] = extras_require['crypto']
 
 setup(
     name="Electrin",
-    version=version.ELECTRUM_VERSION,
+    version=version.ELECTRIN_VERSION,
     python_requires='>={}'.format(MIN_PYTHON_VERSION),
     install_requires=requirements,
     extras_require=extras_require,

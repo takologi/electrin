@@ -73,7 +73,7 @@ from .mnemonic import Mnemonic
 from .lnutil import (channel_id_from_funding_tx, LnFeatures, SENT, RECEIVED, MIN_FINAL_CLTV_DELTA_ACCEPTED,
                      PaymentFeeBudget, NBLOCK_CLTV_DELTA_TOO_FAR_INTO_FUTURE)
 from .plugin import run_hook, DeviceMgr, Plugins
-from .version import ELECTRUM_VERSION
+from .version import ELECTRUM_VERSION, ELECTRIN_VERSION
 from .simple_config import SimpleConfig
 from .fee_policy import FeePolicy, FEE_ETA_TARGETS, FEERATE_DEFAULT_RELAY
 from . import GuiImportError
@@ -258,7 +258,7 @@ class Commands(Logger):
             'spv_nodes': len(self.network.get_interfaces()),
             'connected': self.network.is_connected(),
             'auto_connect': net_params.auto_connect,
-            'version': ELECTRUM_VERSION,
+            'version': ELECTRIN_VERSION,
             'fee_estimates': self.network.fee_estimates.get_data()
         }
         return response
@@ -777,13 +777,14 @@ class Commands(Logger):
     @command('')
     async def version(self):
         """Return the version of Electrin."""
-        return ELECTRUM_VERSION
+        return ELECTRIN_VERSION
 
     @command('')
     async def version_info(self):
         """Return information about dependencies, such as their version and path."""
         ret = {
-            "electrum.version": ELECTRUM_VERSION,
+            "electrin.version": ELECTRIN_VERSION,
+            "electrum.version": ELECTRUM_VERSION,  # nearest upstream Electrum release merged (internal tracking)
             "electrum.path": os.path.dirname(os.path.realpath(__file__)),
             "python.version": sys.version,
             "python.path": sys.executable,

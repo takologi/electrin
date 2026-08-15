@@ -1,4 +1,27 @@
-ELECTRUM_VERSION = '4.7.1rc2'       # version of the client package
+# ─── VERSION IDENTITY ───────────────────────────────────────────────────
+#
+# Electrin tracks two independent version numbers:
+#
+#   ELECTRIN_VERSION - Electrin's own release identity. This is what users,
+#     packaging (APK/AppImage/installer naming), the About dialog, the
+#     --version CLI output, crash reports, and the update checker all deal
+#     with. Bump this on every Electrin release.
+#
+#   ELECTRUM_VERSION - the nearest upstream Electrum release actually merged
+#     into this fork. Kept purely for internal/protocol purposes: plugin
+#     min/max version gating (electrum/plugin.py, via distutils.StrictVersion
+#     — must stay in strict X.Y.Z[.N] form) and the Electrum-protocol P2P
+#     user-agent string sent to Fulcrum-rin servers. Bump this only when
+#     re-syncing with upstream, not on every Electrin release.
+#
+# Do not conflate the two: call sites that are user-facing (About dialog,
+# CLI --version, crash reports, update checker, packaging) should read
+# ELECTRIN_VERSION; call sites that are upstream-protocol/plugin-compat
+# machinery should keep reading ELECTRUM_VERSION.
+# ─────────────────────────────────────────────────────────────────────────
+
+ELECTRIN_VERSION = '1.0.0-beta.1'   # Electrin's own release identity
+ELECTRUM_VERSION = '4.7.2'          # nearest upstream Electrum release merged (internal/protocol use only)
 
 PROTOCOL_VERSION_MIN = '1.4'     # electrum protocol
 PROTOCOL_VERSION_MAX = '1.6'

@@ -244,7 +244,7 @@ class TrustedCoinCosignerClient(Logger):
                                  timeout=60)
 
 
-server = TrustedCoinCosignerClient(user_agent="Electrin/" + version.ELECTRUM_VERSION)
+server = TrustedCoinCosignerClient(user_agent="Electrin/" + version.ELECTRIN_VERSION)
 
 
 class Wallet_2fa(Multisig_Wallet):

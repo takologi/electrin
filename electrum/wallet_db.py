@@ -44,7 +44,7 @@ from .lnutil import HTLCOwner, ChannelType, RecvMPPResolution
 from . import json_db
 from .json_db import JsonDB, locked, modifier, StoredObject, stored_in, stored_as
 from .plugin import run_hook, plugin_loaders
-from .version import ELECTRUM_VERSION
+from .version import ELECTRUM_VERSION, ELECTRIN_VERSION
 from .i18n import _
 
 if TYPE_CHECKING:
@@ -1433,9 +1433,9 @@ class WalletDBUpgrader(Logger):
         if not seed_version:
             seed_version = OLD_SEED_VERSION if len(self.get('master_public_key','')) == 128 else NEW_SEED_VERSION
         if seed_version > FINAL_SEED_VERSION:
-            raise WalletFileException('This version of Electrum ({}) is too old to open this wallet.\n'
+            raise WalletFileException('This version of Electrin ({}) is too old to open this wallet.\n'
                                       '(highest supported storage version: {}, version of this file: {})'
-                                      .format(ELECTRUM_VERSION, FINAL_SEED_VERSION, seed_version))
+                                      .format(ELECTRIN_VERSION, FINAL_SEED_VERSION, seed_version))
         if seed_version == 14 and self.get('seed_type') == 'segwit':
             self._raise_unsupported_version(seed_version)
         if seed_version == 51 and self._detect_insane_version_51():

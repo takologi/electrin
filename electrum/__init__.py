@@ -14,7 +14,7 @@ class GuiImportError(ImportError):
     pass
 
 
-from .version import ELECTRUM_VERSION
+from .version import ELECTRUM_VERSION, ELECTRIN_VERSION
 from .util import format_satoshis
 from .wallet import Wallet
 from .storage import WalletStorage
@@ -31,7 +31,7 @@ from .commands import Commands, known_commands
 from .logging import get_logger
 
 
-__version__ = ELECTRUM_VERSION
+__version__ = ELECTRIN_VERSION
 
 _logger = get_logger(__name__)
 

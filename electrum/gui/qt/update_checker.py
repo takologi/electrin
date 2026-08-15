@@ -76,7 +76,7 @@ class UpdateCheck(QDialog, Logger):
         self.content.addWidget(self.pb)
 
         versions = QHBoxLayout()
-        versions.addWidget(QLabel(_("Current version: {}").format(version.ELECTRUM_VERSION)))
+        versions.addWidget(QLabel(_("Current version: {}").format(version.ELECTRIN_VERSION)))
         self.latest_version_label = QLabel(_("Latest version: {}").format(" "))
         versions.addWidget(self.latest_version_label)
         self.content.addLayout(versions)
@@ -113,13 +113,11 @@ class UpdateCheck(QDialog, Logger):
 
     @staticmethod
     def is_newer(latest_version):
-        # StrictVersion does not support 'rc' pre-release tags.
-        # Strip rcN suffix so e.g. '4.7.1rc1' → '4.7.1'.
-        # An RC is always older than the corresponding release, so
-        # this is correct: if the server announces 4.7.1, and we are
-        # running 4.7.1rc1, the comparison becomes 4.7.1 > 4.7.1 → False,
-        # which is fine (user is about to get the release anyway).
-        local = re.sub(r'rc\d+$', '', version.ELECTRUM_VERSION)
+        # StrictVersion only accepts 'X.Y.Z' or 'X.Y.Z[ab]N' forms, so
+        # ELECTRIN_VERSION's '-beta.N'/'-rc.N' suffixes (e.g. '1.0.0-beta.1')
+        # need normalizing to that form (e.g. '1.0.0b1') for comparison.
+        local = re.sub(r'-beta\.?(\d+)$', r'b\1', version.ELECTRIN_VERSION)
+        local = re.sub(r'-rc\.?(\d+)$', r'c\1', local)
         return latest_version > StrictVersion(local)
 
     def update_view(self, latest_version=None):

@@ -196,7 +196,7 @@ restore_git_tree() {
 # ── pre-flight checks ───────────────────────────────────────────
 info "=== Electrin release build ==="
 
-VERSION=$(python3 -c "exec(open('electrum/version.py').read()); print(ELECTRUM_VERSION)")
+VERSION=$(python3 -c "exec(open('electrum/version.py').read()); print(ELECTRIN_VERSION)")
 info "Building version: $VERSION"
 
 if ! command -v docker &>/dev/null; then

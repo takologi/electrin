@@ -28,7 +28,7 @@ import queue
 from typing import TYPE_CHECKING, NamedTuple, Optional, TypedDict
 from types import TracebackType
 
-from .version import ELECTRUM_VERSION
+from .version import ELECTRIN_VERSION
 from . import constants
 from .i18n import _
 from .util import make_aiohttp_session, error_text_str_to_safe_str
@@ -171,7 +171,7 @@ class BaseCrashReporter(Logger):
         return sha256(str(_id))
 
     def get_additional_info(self):
-        app_version = (get_git_version() or ELECTRUM_VERSION)
+        app_version = (get_git_version() or ELECTRIN_VERSION)
         if _tainted_by_console:
             app_version += "-consoletaint"
         args = {
