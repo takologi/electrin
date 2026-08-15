@@ -75,12 +75,9 @@ class AbstractNet:
     # When False, wallet.can_have_lightning() returns False unconditionally,
     # hiding all LN UI and preventing channel creation.
     HAS_LIGHTNING: bool = True
-    # TODO(rincoin-bip44): Each subclass must set BIP44_COIN_TYPE to its
-    # SLIP-0044 registered coin type.  For Rincoin the final value is PENDING
-    # registration at https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-    # Use the placeholder value defined in RincoinMainnet until registration is
-    # confirmed.  MUST be replaced with the registered number before any public
-    # release to avoid derivation-path collisions with other coins.
+    # Each subclass must set BIP44_COIN_TYPE to its SLIP-0044 registered coin
+    # type. Rincoin is registered as 9555:
+    # https://github.com/satoshilabs/slips/blob/master/slip-0044.md
     BIP44_COIN_TYPE: int
     LN_REALM_BYTE: int
     DEFAULT_PORTS: Mapping[str, str]
@@ -310,14 +307,9 @@ class RincoinMainnet(AbstractNet):
     }
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
 
-    # TODO(rincoin-bip44): SLIP-0044 registration PR is pending:
-    #   https://github.com/satoshilabs/slips/pull/1985
-    # Replace 9555 with the officially assigned coin type once the PR is
-    # merged.  9555 is the Rincoin p2p port — a recognisable sentinel that
-    # makes unregistered derivation paths obvious in any wallet dump.
-    # MUST be updated before any public release to avoid derivation-path
-    # collisions with other coins.
-    BIP44_COIN_TYPE = 9555          # PENDING SLIP-0044 registration (PR #1985)
+    # SLIP-0044 registered coin type: https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+    # (Note: ticker "RIN" is also used by Ringo at coin type 205 — unrelated, do not confuse.)
+    BIP44_COIN_TYPE = 9555
 
     # PoW verification parameters (used by electrum/blockchain.py)
     MAX_TARGET = 0x0000ffff00000000000000000000000000000000000000000000000000000000  # compact: 0x1f00ffff

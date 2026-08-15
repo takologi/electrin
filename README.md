@@ -236,7 +236,6 @@ Each item references the source file(s) where the matching code comment lives.
 |-----|---------|-------|
 | `CHECKPOINTS` | Generate checkpoints.json from Rincoin Core RPC (`python3 contrib/generate_checkpoints.py`). Without checkpoints, a malicious server can serve a fabricated header chain. | `electrum/constants.py`, `contrib/generate_checkpoints.py` |
 | `SEED-PREFIX` | Decide whether to adopt unique seed prefixes before stable release to prevent cross-chain seed confusion with Electrum. | `electrum/version.py` |
-| `BIP44` | SLIP-0044 coin_type 9555 registration pending ([PR #1985](https://github.com/satoshilabs/slips/pull/1985)). | `electrum/constants.py` |
 
 ### Branding
 
