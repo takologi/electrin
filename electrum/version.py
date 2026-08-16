@@ -21,7 +21,7 @@
 # ─────────────────────────────────────────────────────────────────────────
 
 ELECTRIN_VERSION = '1.0.0-beta.1'   # Electrin's own release identity
-ELECTRUM_VERSION = '4.7.2'          # nearest upstream Electrum release merged (internal/protocol use only)
+ELECTRUM_VERSION = '4.8.1'          # nearest upstream Electrum release merged (internal/protocol use only)
 
 PROTOCOL_VERSION_MIN = '1.4'     # electrum protocol
 PROTOCOL_VERSION_MAX = '1.6'
