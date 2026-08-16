@@ -45,7 +45,29 @@ message). **Inspect the conflict before resolving one, even for "simple" commits
 has skipped long runs of intervening upstream commits to the same files, so a 3-way merge can conflict even
 when Electrin's side is just an older, otherwise-unmodified version of the file (see the `d34129ef` note in
 Sync pass #1 below for a concrete example). Don't force a resolution you can't verify by reading the
-result.
+result. A conflict can also mean upstream restructured a function across *several* commits, some of which
+you don't want (e.g. the `9d9a503a9`/`08622c743` case in Sync pass #2 below, where a raw cherry-pick would
+have silently dropped an Electrin-only feature) — when that happens, port the *effective* change by hand
+instead of forcing the patch, and say so in the commit message.
+
+**After landing a pass, always check the actual upstream release notes** (`RELEASE-NOTES` at
+`upstream/master`) for the versions the pass covers, not just commit subjects — upstream sometimes
+deliberately undersells a security-relevant commit in its own message (see Sync pass #2: the 4.8.1 notes
+said "important security fixes, details disclosed later" days before this pass, and named the real PRs
+under bland headings like "General"). Cross-referencing the release notes surfaces the ones a subject-line
+or keyword scan alone would miss.
+
+**End a pass by recording it against GitHub's ahead/behind counter**, once buckets 1–3 are actually landed
+(not before — this step is a checkpoint of completed review, not a substitute for it):
+
+```bash
+git merge -s ours <upstream-sha-this-pass-covers-up-to> -m "chore: record upstream sync pass #N as reviewed (no content merged)"
+```
+
+This makes that upstream commit an ancestor without pulling in any of its file content (verify with
+`git diff <before>..<after>` — should be empty). It resets the "N commits behind" badge to reflect only the
+genuinely-unreviewed backlog after this point, and doesn't block cherry-picking anything from before it
+later if a skipped item turns out to matter after all.
 
 ---
 
@@ -145,6 +167,102 @@ doesn't need re-reading each pass):
   applicable; Rincoin's server list is Fulcrum-rin-based.
 - **Docs / release notes** (7) — Electrum-branded release notes, not Electrin's.
 - **All merge commits** (94) — no content of their own.
+
+---
+
+## Sync pass #2 — 2026-08-16
+
+**Scope**: `b9be9749..upstream/master`, i.e. everything since Sync pass #1 — 351 commits, upstream head at
+`a94e460b5` (upstream's own release `4.8.1`, dated 2026-08-10). GitHub's counter had reached "702 commits
+behind" by the time this pass started; that figure is exactly `351 (pass #1's already-reviewed range,
+never checkpointed) + 351 (this range)` — cherry-picks don't move `git merge-base`, so nothing about pass #1
+having landed real work was reflected in that number until the pass #1 checkpoint below. **First action of
+this pass was checkpointing pass #1** (see below), which is why this pass's own scope is only 351, not 702.
+
+**The 4.8.1 release notes named the real bucket-1 list.** `RELEASE-NOTES` at `upstream/master` opens with
+*"Security fixes and disclosures: This release contains important security fixes. Details will be disclosed
+later."* — deliberately vague. Cross-referencing the itemized entries under the bland "General" and
+"Electrum protocol" headings against their actual commits (not just scanning commit subjects for the word
+"security") surfaced several real fixes a keyword scan alone missed entirely — notably the WIF/private-key
+screenshot-protection extension and the wallet-DB JSON-patch escaping fix. **Always pull the actual release
+notes for a pass's version range, not just the commit log** — see the policy note above.
+
+### Bucket 1 — landed this pass
+
+All 18 landed directly on `master` (17 commits + one, `8e5ea8e12`, confirmed already present under
+different history and correctly skipped as a no-op):
+
+| SHA | Subject | Note |
+|---|---|---|
+| `739cba5d7` | qml/android: protect WIF keys from screenshots in more places | Extends existing screenshot protection (`AddressDetails.qml`) to `ImportAddressesKeysDialog`, `SweepDialog`, `WalletDetails`, and the seed-display wizard screen; fixes a dialog-stacking bug in the original binding. |
+| `671c08b6d` | add_tx_fee_from_server: check fee_sat type | Defends against a malformed/malicious fee value from an Electrum-protocol server. |
+| `97007d9e0` | json_db: escape '\\' and '~' in json patch pointer | RFC 6901 escaping bug in the wallet-DB JSON-patch mechanism — unescaped input could target the wrong path. |
+| `f75f19588` | json_db: set_modified after incomplete data | Wallet-DB recovery-path correctness fix. |
+| `c9b2043dc` | jsondb: handle structural characters in data during recovery | Handles `{`/`}` appearing inside user-controlled *values* during truncated-file recovery, which could previously desync the recovery parser. Required manually adding a missing `Dict` import to `typing` that this commit's upstream context assumed was already present (it was, several commits earlier upstream, outside this pass's range) — see the amended commit. |
+| `81030cb97` | json_db/config: sanitize logging of unserializable values | Privacy/security hygiene — avoids leaking secrets into logs. |
+| `86745a772` + `954c4cf0e` + `99df67cd1` | interface: subscriptions strict checks / resource limits for non-main interfaces | The actual "hardening against resource exhaustion" cluster named in the 4.8.1 notes. Directly applicable — this is the exact layer Electrin uses to talk to Fulcrum-rin. `99df67cd1`'s test-file hunk conflicted (pure append, resolved by taking the addition); both new tests (`test_we_disconnect_on_incoming_request`, `test_we_disconnect_on_incoming_notification_spam`) verified passing after resolution. |
+| `d8548dc9a` + `5de8ae887` + `add8e7148`\* | transaction/bitcoin.py: base43 DoS hardening | Closes an algorithmic-complexity (quadratic-time) DoS vector: `convert_raw_tx_to_hex()` no longer attempts an O(n²) base43 decode on inputs over 30,000 chars, and tries the cheap base64 check first. \*`add8e7148` is a **hand-port**, not a raw cherry-pick of `9d9a503a9`/`08622c743` — upstream's current version of this function no longer has the whitespace-stripping logic Electrin carries from an earlier-ported commit (`37db6ea7e`), so applying the patch as-is would have silently deleted that feature. Reconstructed the same net security effect while keeping it. |
+| `fba8180c8` | trustedcoin: billing_index: mitigate against CPU DOS from malicious server | Real DoS fix in the 2FA plugin, which Electrin's wizard actively offers as a wallet-kind option. |
+| `a4b7c800f` | wallet: check_sighash: handle unknown sighash gracefully | Avoids a crash/exception path on an exotic/malformed sighash. |
+| `2c2a40b64` + `d74c9cec9` | docs: Coldcard Mk3 seed-entropy security notice | A real, disclosed hardware-wallet security issue — doc-only, cheap, should be visible to any Rincoin user pairing a Coldcard. |
+
+### Bucket 2 — next batch, before the next release
+
+- `a266c7635`, `0ee0e390f` — tests directly covering the `maybe_load_incomplete_data` hardening landed in bucket 1 (`c9b2043dc`/`f75f19588`). Should accompany it.
+- `88c7c6d50` — `network: fix get_servers should not modify ports of DEFAULT_SERVERS` — real bugfix in server-list handling.
+- `ab6308d65` — `constants: add basic sanity check for servers.json`.
+- `c43cf8e46` — `config: don't save "hidden wallet" paths in CURRENT_WALLET cv` — privacy fix.
+- `4c3064f56` + `72507328f` — `wallet: sign_message: strip whitespaces in GUIs, do not strip in CLI` (Qt + QML) — signing-consistency fix.
+- `05d589750` — `qml: trustedcoin: add type hints, reduce excessive logging` — privacy hygiene, pairs with the bucket-1 trustedcoin DoS fix.
+- `b5a0af272` — `qml/2fa: partially reverse #10543` — Electrin offers 2FA wallets; worth checking what this reverts before batching.
+- Hardware-wallet plugin cluster, bundle together: `1547c5b4c`+`154d79ebb` (trezor Safe 7), `071b1e24c` (trezor session), `d7500508f` (coldcard fix), `898a4c270`+`f3af41de4` (hw dialog reuse).
+
+### Bucket 3 — soon, can wait
+
+`3ae85eeff` (memory-hardening disable option), `271f079dc` (tx_from_any optional sanitization — read
+carefully before porting, name suggests it *weakens* a check), `3638934e2`, `6a89dd303`, `920840a8c`,
+`cc5250821`, `bb1aaf60e`, `92e938f4b`, `95317f4b8`, `38a2e1ab4`, `a395da4e4`, `6571e479e`, `b199abba3`,
+`7b4759c5b`, `d5b7e743f`, `74b0993aa`, and the remaining test-only commits not tied to a bucket-1/2 fix.
+
+### Bucket 4 — needs its own decision
+
+- **Upstream has fully migrated off Cirrus CI to GitHub Actions** (`a41c76f3f` removes `.cirrus.yml`
+  entirely upstream; `b3986341b`/`ffdd1f42f`/`93acf9013`/`9e809f2b5`/`699603b06` add the GitHub Actions
+  replacements). This is the single biggest structural finding of this pass: Electrin's own `.cirrus.yml`
+  now tracks a CI system upstream itself has abandoned, so there's nothing more to sync there going
+  forward — future upstream CI changes won't touch it. Separately notable: upstream's GitHub Actions setup
+  now includes an **LLM-based automated security-review workflow on every PR**
+  (`ddde0f09c`/`39cdb23e5`/`a6cfdc5b2`/`de7a8bdb3`/`87ca59e59`/`ed83982fe`/`1334146da`) — genuinely worth
+  evaluating for this repo independent of the CI-platform question.
+- PyQt/Qt6.10 version pin (`33e67fdae`) — same open question as the Android/Qt6.10 wave from pass #1.
+- General Qt/QML styling and UX churn (~35 commits, not enumerated here — see
+  `UPSTREAM_MERGE_TRIAGE_RINCOIN_BOOTSTRAP.md`-style raw listing via `git log b9be9749..upstream/master --
+  electrum/gui/qt electrum/gui/qml` if needed). Same guidance as pass #1: batch-review on its own schedule.
+- Android build churn (openssl bump, p4a ref bump, target SDK 36, trezorlib 0.20.1) — same conflict-risk
+  caveat against Electrin's custom recipes as pass #1.
+
+### Bucket 5 — skip, not relevant
+
+- **Lightning core** (89) and **NWC plugin** (6) — same permanent policy.
+- `a10392325` ("wallet: don't remove ln xprv from wallet backup") — categorized as Wallet/core by subject
+  matching, but is LN-specific content; no LN xprv exists in a Rincoin wallet.
+- `fb9f6c871` ("increase ELECTRUM_VERSION to 4.8.0") — upstream's own version bump; not a cherry-pick
+  target, already reflected by this session's own `ELECTRUM_VERSION` tracker update to `4.8.1`.
+- `73e1e18fa` ("add builder keys for svanstaa") — upstream's own release-signing key management, not
+  applicable (same reasoning as `contrib/add_cosigner` in `CLAUDE.md`).
+- Chain data/servers (3), docs/release-notes (4), all merge commits (114).
+
+### Checkpoint
+
+Pass #1's range was checkpointed first, dropping the counter from 702 to 351:
+
+```
+git merge -s ours b9be9749   # records 6c1e08593..b9be9749 (pass #1) as reviewed, no content merged
+```
+
+Pass #2's range should be checkpointed the same way once buckets 2–3 above are also landed (not yet done as
+of this entry — only bucket 1 is in). Until then the counter reflects genuinely-pending bucket 2/3 work
+rather than a false "all clear."
 
 ---
 
