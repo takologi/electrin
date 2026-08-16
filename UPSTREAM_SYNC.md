@@ -206,23 +206,48 @@ different history and correctly skipped as a no-op):
 | `a4b7c800f` | wallet: check_sighash: handle unknown sighash gracefully | Avoids a crash/exception path on an exotic/malformed sighash. |
 | `2c2a40b64` + `d74c9cec9` | docs: Coldcard Mk3 seed-entropy security notice | A real, disclosed hardware-wallet security issue — doc-only, cheap, should be visible to any Rincoin user pairing a Coldcard. |
 
-### Bucket 2 — next batch, before the next release
+### Bucket 2 — landed (11 of 15 planned)
 
-- `a266c7635`, `0ee0e390f` — tests directly covering the `maybe_load_incomplete_data` hardening landed in bucket 1 (`c9b2043dc`/`f75f19588`). Should accompany it.
-- `88c7c6d50` — `network: fix get_servers should not modify ports of DEFAULT_SERVERS` — real bugfix in server-list handling.
-- `ab6308d65` — `constants: add basic sanity check for servers.json`.
-- `c43cf8e46` — `config: don't save "hidden wallet" paths in CURRENT_WALLET cv` — privacy fix.
-- `4c3064f56` + `72507328f` — `wallet: sign_message: strip whitespaces in GUIs, do not strip in CLI` (Qt + QML) — signing-consistency fix.
-- `05d589750` — `qml: trustedcoin: add type hints, reduce excessive logging` — privacy hygiene, pairs with the bucket-1 trustedcoin DoS fix.
-- `b5a0af272` — `qml/2fa: partially reverse #10543` — Electrin offers 2FA wallets; worth checking what this reverts before batching.
-- Hardware-wallet plugin cluster, bundle together: `1547c5b4c`+`154d79ebb` (trezor Safe 7), `071b1e24c` (trezor session), `d7500508f` (coldcard fix), `898a4c270`+`f3af41de4` (hw dialog reuse).
+- `88c7c6d50`, `ab6308d65` — server-list handling bugfix + sanity check.
+- `d7500508f` — coldcard `get_soft_device_id()` missing-return bugfix (independent of the trezor wave below).
+- `898a4c270` + `f3af41de4` — hw-wallet dialog reuse (generic `hw_wallet/qt.py`, applies to every hardware wallet, not trezor-specific).
+- `b5a0af272` — `qml/2fa: partially reverse #10543`. Electrin's copy of `ShowConfirmOTP.qml` never had the *original* PR #10543 behavior this "reverts" (same class of gap as `d34129ef` in pass #1) — there was nothing to revert against, so the intended end-state (copy-to-clipboard, Android auto-open commented out) was added directly instead of applying the patch mechanically.
+- `a266c7635`, `0ee0e390f` — tests covering the bucket-1 `maybe_load_incomplete_data` hardening.
+- `c43cf8e46` — hidden-wallet-path privacy fix.
+- `72507328f` — QML sign-message whitespace stripping (the smaller, self-contained PR #10787 predecessor to `4c3064f56` below).
+- `05d589750` — trustedcoin logging reduction.
 
-### Bucket 3 — soon, can wait
+**Deferred to bucket 4** (discovered mid-cherry-pick, not from the original plan):
+- `1547c5b4c`+`154d79ebb` (trezor Safe 7) and `071b1e24c` (trezor session handling) — both conflict because
+  they assume the newer trezorlib API surface (`models`, `PassphraseSetting`, `AppManifest`, `get_client`,
+  `trezorlib.thp.pairing`) from upstream's trezorlib 0.20.1 bump (`0f2fa36ec`, itself bucket-4 from pass #1's
+  Android/toolchain wave). Cherry-picking the plugin-code commits without that dependency bump would leave
+  imports Electrin's pinned trezorlib doesn't provide — this is a dependency-bump decision, not a patch.
+- `4c3064f56` (`wallet: sign_message: strip whitespaces in GUIs, do not strip in CLI`) and `92e938f4b`
+  (`decrypt_message` nicer error) — both assume `Abstract_Wallet.verify_message()` exists as a wallet method
+  and `decrypt_message()`/`encrypt_message()` have keyword-only signatures Electrin doesn't have. This is a
+  real, self-contained upstream refactor of the wallet message-crypto API that Electrin never received (predates
+  this pass's range) — worth doing as its own scoped effort, not a drive-by pickup of a follow-on commit.
 
-`3ae85eeff` (memory-hardening disable option), `271f079dc` (tx_from_any optional sanitization — read
-carefully before porting, name suggests it *weakens* a check), `3638934e2`, `6a89dd303`, `920840a8c`,
-`cc5250821`, `bb1aaf60e`, `92e938f4b`, `95317f4b8`, `38a2e1ab4`, `a395da4e4`, `6571e479e`, `b199abba3`,
-`7b4759c5b`, `d5b7e743f`, `74b0993aa`, and the remaining test-only commits not tied to a bucket-1/2 fix.
+### Bucket 3 — landed (13 of 16 planned)
+
+`a395da4e4`, `271f079dc` (verified safe — read the full diff before assuming "make sanitization optional"
+weakens anything: it *moves* the existing whitespace-stripping into `tx_from_any` behind a `sanitize` flag
+that user-facing/RPC call sites still default to `True`; only internal reloads of already-validated wallet-DB
+data opt out, for performance), `3ae85eeff`, `3638934e2`, `6a89dd303` (a direct follow-up simplification to
+the bucket-1 base43 fix — reconciled by hand to keep the security-relevant size cap while dropping the
+now-redundant `raw_unstripped` variable, exactly as upstream intended), `920840a8c`, `cc5250821`, `bb1aaf60e`,
+`38a2e1ab4`, `6571e479e`, `b199abba3` (turned out to be LN-only content that slipped through the
+bucket-3 filter — harmless dead code for Rincoin since `HAS_LIGHTNING=False`, left in rather than unwound),
+`74b0993aa`, `d5b7e743f`.
+
+**Deferred to bucket 4:**
+- `95317f4b8` (stale-comment fix) depends on a rename (`_paid_invoice_keys` → `_paid_invoice_keys_cache`)
+  from an unported paid-invoice-caching feature (`d2d4251c8`/`63ee2f3a6`/`4f8972008`, not yet triaged).
+- `7b4759c5b` (skip balance-delta calc for large tx-notification batches) is a follow-up optimization to
+  `get_user_notifications_for_new_txns()`, a method Electrin doesn't have at all — its introducing commit
+  (`03e95acc`/`2ea8d115`) was deliberately skipped as Qt/QML churn in pass #1. Bundle both together if this
+  notification feature is ever adopted.
 
 ### Bucket 4 — needs its own decision
 
@@ -234,12 +259,21 @@ carefully before porting, name suggests it *weakens* a check), `3638934e2`, `6a8
   now includes an **LLM-based automated security-review workflow on every PR**
   (`ddde0f09c`/`39cdb23e5`/`a6cfdc5b2`/`de7a8bdb3`/`87ca59e59`/`ed83982fe`/`1334146da`) — genuinely worth
   evaluating for this repo independent of the CI-platform question.
+- **trezorlib 0.20.1 dependency bump** (`0f2fa36ec`) plus its three dependent plugin commits above
+  (`1547c5b4c`, `154d79ebb`, `071b1e24c`) — bundle as one scoped upgrade.
+- **Wallet message-crypto API refactor** (`4c3064f56`, `92e938f4b`, and whatever introduced
+  `Abstract_Wallet.verify_message`/`encrypt_message` upstream before this pass's range) — bundle as one
+  scoped effort; touches signing/verification/encryption, so worth its own careful review and test pass
+  rather than folding into a routine sync.
+- **Paid-invoice-key caching feature** (`d2d4251c8`/`63ee2f3a6`/`4f8972008`) and **large-batch tx-notification
+  UX** (`03e95acc`/`2ea8d115`/`7b4759c5b`) — both real, self-contained features Electrin never received;
+  evaluate as features, not sync-pass fodder.
 - PyQt/Qt6.10 version pin (`33e67fdae`) — same open question as the Android/Qt6.10 wave from pass #1.
 - General Qt/QML styling and UX churn (~35 commits, not enumerated here — see
   `UPSTREAM_MERGE_TRIAGE_RINCOIN_BOOTSTRAP.md`-style raw listing via `git log b9be9749..upstream/master --
   electrum/gui/qt electrum/gui/qml` if needed). Same guidance as pass #1: batch-review on its own schedule.
-- Android build churn (openssl bump, p4a ref bump, target SDK 36, trezorlib 0.20.1) — same conflict-risk
-  caveat against Electrin's custom recipes as pass #1.
+- Android build churn (openssl bump, p4a ref bump, target SDK 36) — same conflict-risk caveat against
+  Electrin's custom recipes as pass #1.
 
 ### Bucket 5 — skip, not relevant
 
@@ -260,9 +294,17 @@ Pass #1's range was checkpointed first, dropping the counter from 702 to 351:
 git merge -s ours b9be9749   # records 6c1e08593..b9be9749 (pass #1) as reviewed, no content merged
 ```
 
-Pass #2's range should be checkpointed the same way once buckets 2–3 above are also landed (not yet done as
-of this entry — only bucket 1 is in). Until then the counter reflects genuinely-pending bucket 2/3 work
-rather than a false "all clear."
+Buckets 2 and 3 landed in a follow-up continuation of this same pass (24 of 31 originally-planned items;
+7 more discovered mid-cherry-pick to be entangled with unported features and moved to bucket 4 — see the
+bucket 2/3 sections above for exactly which and why). With buckets 1–3 now actually landed, pass #2 is
+checkpointed the same way:
+
+```
+git merge -s ours a94e460b5   # records b9be9749..a94e460b5 (pass #2) as reviewed, no content merged
+```
+
+Everything remaining after this point is bucket 4 (needs a dedicated decision, not routine sync work) or
+bucket 5 (permanently skipped) — the counter reflects that going forward, not raw upstream activity.
 
 ---
 
